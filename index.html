@@ -52,6 +52,32 @@
   details summary{cursor:pointer;font-weight:700;font-size:17px}
   .oculto{display:none!important}
   a{color:var(--accent)}
+  .abas{display:flex;gap:6px;margin:0 0 14px}
+  .abas button{flex:1;font-weight:700;background:var(--card)}
+  .abas button.ativa{background:var(--ink);color:#F6F4EF;border-color:var(--ink)}
+  .badge{display:inline-block;min-width:20px;padding:1px 7px;border-radius:999px;background:var(--err-ink);color:#fff;font-size:12px;margin-left:6px}
+  .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .barra input[type=text]{flex:1 1 200px}
+  .ped{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+  .ped.devolvido{border-left:5px solid var(--err-ink)}
+  .ped.novidade{border-left:5px solid var(--accent)}
+  .ped-topo{padding:12px 14px;cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ped-topo .cli{font-weight:700;flex:1 1 180px}
+  .ped-sub{color:var(--muted);font-size:13px;padding:0 14px 10px;margin-top:-6px}
+  .chip{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:#ECE8DF;color:var(--ink);white-space:nowrap}
+  .chip.st-devolvido{background:var(--err-bg);color:var(--err-ink)}
+  .chip.st-andamento{background:#E3ECFB;color:#1D4FA8}
+  .chip.st-enviado{background:var(--ok-bg);color:var(--ok-ink)}
+  .chip.rod{background:var(--warn-bg);color:var(--warn-ink)}
+  .ped-corpo{border-top:1px solid var(--line);padding:12px 14px}
+  .linha-tempo{list-style:none;margin:0 0 12px;padding:0;font-size:14px}
+  .linha-tempo li{padding:6px 0;border-bottom:1px dashed var(--line)}
+  .linha-tempo .quando{color:var(--muted);font-size:12px;margin-right:6px}
+  .linha-tempo .txt{white-space:pre-wrap;display:block;margin-top:2px}
+  .linha-tempo li.dev{color:var(--err-ink)}
+  .acoes-ped{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .acoes-ped select{flex:1 1 200px;width:auto}
+  button.forte{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 </style>
 </head>
 <body>
@@ -73,6 +99,12 @@
   </section>
 
   <!-- ============ FORMULÁRIO ============ -->
+  <nav id="abas" class="abas oculto">
+    <button type="button" data-aba="novo" class="ativa">Novo pedido</button>
+    <button type="button" data-aba="meus">Meus pedidos<span id="badge" class="badge oculto"></span></button>
+  </nav>
+
+  <div id="abaNovo">
   <form id="form" class="oculto" novalidate>
     <section class="bloco">
       <h2><span class="num">1</span>Cliente</h2>
@@ -183,6 +215,18 @@
     <p id="okTexto"></p>
     <p><button type="button" id="btnNovo" class="primario">Fazer outro pedido</button></p>
   </section>
+  </div>
+
+  <!-- ============ MEUS PEDIDOS ============ -->
+  <section id="telaMeus" class="oculto">
+    <div class="barra">
+      <input type="text" id="buscaMeus" placeholder="Buscar cliente, pasta ou nº do pedido">
+      <label class="radios" style="border:none;padding:0;margin:0"><input type="checkbox" id="verTodos"><span>Ver de todos</span></label>
+      <button type="button" class="mini" id="btnAtualizar">Atualizar</button>
+    </div>
+    <div id="erroMeus" class="erro oculto"></div>
+    <div id="listaMeus"></div>
+  </section>
 </main>
 
 <template id="tplOpcao">
@@ -264,7 +308,9 @@ async function atualizarTela(){
   mostrar($("telaLogin"), !logado);
   mostrar($("btnSair"), logado);
   mostrar($("form"), logado && $("telaOk").classList.contains("oculto"));
-  if (logado && !cadastrosCarregados) { cadastrosCarregados = true; await carregarCadastros(); }
+  mostrar($("abas"), logado);
+  if (!logado) { mostrar($("telaMeus"), false); mostrar($("abaNovo"), true); }
+  if (logado && !cadastrosCarregados) { cadastrosCarregados = true; setTimeout(carregarMeus, 0); await carregarCadastros(); }
 }
 
 // ---------- CADASTROS ----------
@@ -536,6 +582,187 @@ $("form").addEventListener("submit", async (ev) => {
 function erroForm(t){ $("formErro").textContent = t; mostrar($("formErro"), true); $("formErro").scrollIntoView({ behavior: "smooth", block: "center" }); }
 
 $("btnNovo").onclick = () => location.reload();
+
+// =====================================================================
+// MEUS PEDIDOS — status, conversa com o desenvolvimento e alterações
+// =====================================================================
+const ACAO_URL = SUPABASE_URL + "/functions/v1/dev-acao";
+const MOTIVOS_ALT = { cliente_mudou: "O cliente mudou o pedido", erro_desenvolvimento: "Erro do desenvolvimento", faltou_informacao: "Faltou informação no pedido" };
+const TIPO_PED = { novo: "Novo", alteracao: "Alteração de código", cor_medida: "Nova cor/medida" };
+let pedidos = [], eventosPorPedido = {}, abertos = new Set();
+
+const meuEmail = () => (sessao?.user?.email || "").toLowerCase();
+const norm = (t) => String(t || "").trim().toLowerCase();
+const ehDevolvido = (st) => norm(st) === "devolvido ao comercial";
+const ehEntregue = (st) => !["entrada", "devolvido ao comercial"].includes(norm(st));
+const dataHora = (iso) => { const d = new Date(iso); return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); };
+const visto = (id) => { try { return Number(localStorage.getItem("lt_visto_" + id) || 0); } catch (_) { return 0; } };
+const marcarVisto = (id, evId) => { try { localStorage.setItem("lt_visto_" + id, String(evId)); } catch (_) {} };
+
+function classeStatus(st) {
+  const n = norm(st);
+  if (n === "devolvido ao comercial") return "st-devolvido";
+  if (n === "enviado ao comercial" || n === "aprovado pelo cliente") return "st-enviado";
+  if (n === "em criação" || n === "conferência") return "st-andamento";
+  return "";
+}
+// novidade = algo vindo do desenvolvimento que a vendedora ainda não abriu
+function novidades(p) {
+  const v = visto(p.id);
+  return (eventosPorPedido[p.id] || []).filter(e => e.id > v && ["comentario", "devolvido", "movido"].includes(e.tipo) && norm(e.autor) !== meuEmail()).length;
+}
+
+function irAba(a) {
+  document.querySelectorAll("#abas button").forEach(b => b.classList.toggle("ativa", b.dataset.aba === a));
+  mostrar($("abaNovo"), a === "novo");
+  mostrar($("telaMeus"), a === "meus");
+  if (a === "meus") carregarMeus();
+}
+document.querySelectorAll("#abas button").forEach(b => b.onclick = () => irAba(b.dataset.aba));
+$("btnAtualizar").onclick = () => carregarMeus();
+$("verTodos").onchange = () => carregarMeus();
+$("buscaMeus").oninput = () => desenharMeus();
+
+async function carregarMeus() {
+  try { await carregarMeusInterno(); }
+  catch (e) { $("erroMeus").textContent = "Não consegui carregar os pedidos: " + (e.message || e); mostrar($("erroMeus"), true); }
+}
+async function carregarMeusInterno() {
+  mostrar($("erroMeus"), false);
+  if (!pedidos.length) $("listaMeus").innerHTML = '<p class="ajuda">Carregando…</p>';
+  let q = db.from("solicitacoes")
+    .select("id,criado_em,criado_por_email,cliente_nome,pasta,representante,tipo,status,rodada,trello_card_url")
+    .order("id", { ascending: false }).limit(200);
+  if (!$("verTodos").checked) q = q.eq("criado_por_email", meuEmail());
+  const { data, error } = await q;
+  if (error) { $("erroMeus").textContent = "Não consegui carregar: " + error.message; mostrar($("erroMeus"), true); return; }
+  pedidos = data || [];
+  eventosPorPedido = {};
+  const ids = pedidos.map(p => p.id);
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data: ev } = await db.from("eventos")
+      .select("id,solicitacao_id,em,tipo,de_lista,para_lista,motivo,motivo_alteracao,autor,payload")
+      .in("solicitacao_id", ids.slice(i, i + 100)).order("em", { ascending: true }).limit(5000);
+    (ev || []).forEach(e => (eventosPorPedido[e.solicitacao_id] ||= []).push(e));
+  }
+  desenharMeus();
+}
+
+function desenharMeus() {
+  const busca = norm($("buscaMeus").value);
+  const lista = pedidos.filter(p => !busca || norm(`${p.id} ${p.cliente_nome} ${p.pasta} ${p.representante}`).includes(busca));
+  // primeiro os devolvidos, depois os com novidade, depois o resto (mais novos em cima)
+  const peso = (p) => (ehDevolvido(p.status) ? 0 : novidades(p) ? 1 : 2);
+  lista.sort((a, b) => peso(a) - peso(b) || b.id - a.id);
+
+  const meus = pedidos.filter(p => norm(p.criado_por_email) === meuEmail());
+  const pendentes = meus.filter(p => ehDevolvido(p.status) || novidades(p)).length;
+  $("badge").textContent = pendentes; mostrar($("badge"), pendentes > 0);
+
+  if (!lista.length) { $("listaMeus").innerHTML = '<p class="ajuda">Nenhum pedido encontrado.</p>'; return; }
+  $("listaMeus").innerHTML = lista.map(p => {
+    const nov = novidades(p);
+    const cls = ehDevolvido(p.status) ? "devolvido" : nov ? "novidade" : "";
+    return `<div class="ped ${cls}" data-id="${p.id}">
+      <div class="ped-topo">
+        <span class="cli">#${p.id} · ${esc(p.cliente_nome)}${p.pasta ? " · pasta " + esc(p.pasta) : ""}</span>
+        ${p.rodada > 1 ? `<span class="chip rod">R${p.rodada}</span>` : ""}
+        ${nov ? `<span class="badge">${nov} nova${nov > 1 ? "s" : ""}</span>` : ""}
+        <span class="chip ${classeStatus(p.status)}">${esc(p.status)}</span>
+      </div>
+      <div class="ped-sub">${dataHora(p.criado_em)} · ${esc(TIPO_PED[p.tipo] || p.tipo)}${p.representante ? " · rep " + esc(p.representante) : ""}${$("verTodos").checked ? " · " + esc(p.criado_por_email) : ""}</div>
+      <div class="ped-corpo ${abertos.has(p.id) ? "" : "oculto"}">${abertos.has(p.id) ? corpoPedido(p) : ""}</div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".ped .ped-topo").forEach(t => t.onclick = () => alternar(Number(t.parentElement.dataset.id)));
+  abertos.forEach(id => ligarAcoes(id));
+}
+
+function alternar(id) {
+  if (abertos.has(id)) abertos.delete(id); else abertos.add(id);
+  const evs = eventosPorPedido[id] || [];
+  if (abertos.has(id) && evs.length) marcarVisto(id, Math.max(...evs.map(e => e.id)));
+  desenharMeus();
+}
+
+function linhaEvento(e) {
+  const quem = norm(e.autor) === meuEmail() ? "Você" : esc(e.autor || "—");
+  const txt = (t) => t ? `<span class="txt">${esc(t)}</span>` : "";
+  const anexos = (e.payload?.anexos || []).length ? `<span class="txt">📎 ${esc(e.payload.anexos.join(", "))}</span>` : "";
+  const q = `<span class="quando">${dataHora(e.em)}</span>`;
+  switch (e.tipo) {
+    case "criado": return `<li>${q}Pedido enviado</li>`;
+    case "movido": return `<li>${q}${quem} moveu: ${esc(e.de_lista)} → <b>${esc(e.para_lista)}</b></li>`;
+    case "devolvido": return `<li class="dev">${q}⚠ <b>Devolvido ao comercial</b> por ${quem}</li>`;
+    case "comentario": return `<li${e.motivo ? ' class="dev"' : ""}>${q}<b>${quem}</b>${e.motivo ? " (motivo da devolução)" : ""}:${txt(e.payload?.texto || e.motivo)}</li>`;
+    case "mensagem": return `<li>${q}💬 <b>${quem}</b>:${txt(e.payload?.texto)}${anexos}</li>`;
+    case "reenviado": return `<li>${q}↩️ <b>${quem}</b> respondeu e reenviou:${txt(e.payload?.texto)}${anexos}</li>`;
+    case "alteracao": return `<li>${q}✏️ <b>${quem}</b> pediu alteração — ${esc(MOTIVOS_ALT[e.motivo_alteracao] || "")}:${txt(e.payload?.texto)}${anexos}</li>`;
+    default: return `<li>${q}${esc(e.tipo)}</li>`;
+  }
+}
+
+function corpoPedido(p) {
+  const evs = eventosPorPedido[p.id] || [];
+  const motivo = [...evs].reverse().find(e => e.tipo === "comentario" && e.motivo);
+  const devolvido = ehDevolvido(p.status);
+  return `
+    ${devolvido ? `<div class="erro"><b>O desenvolvimento devolveu este pedido.</b> ${motivo ? "Motivo: " + esc(motivo.motivo) : "Veja o comentário no card."}<br>Responda abaixo e clique em <b>Responder e reenviar</b>.</div>` : ""}
+    <ul class="linha-tempo">${evs.map(linhaEvento).join("") || "<li>Sem movimentação ainda.</li>"}</ul>
+    ${p.trello_card_url ? `<p class="ajuda"><a href="${esc(p.trello_card_url)}" target="_blank" rel="noopener">Abrir o card no Trello</a></p>` : ""}
+    <label>Mensagem para o desenvolvimento</label>
+    <textarea class="txtAcao" placeholder="Complemento, correção, resposta…"></textarea>
+    <input type="file" class="arqAcao" multiple style="margin-top:6px">
+    <div class="acoes-ped">
+      ${devolvido ? `<button type="button" class="forte btnResponder">Responder e reenviar</button>` : ""}
+      <button type="button" class="btnMensagem">Enviar mensagem</button>
+    </div>
+    ${ehEntregue(p.status) ? `
+    <div class="acoes-ped">
+      <select class="motivoAlt"><option value="">Motivo da alteração…</option>
+        ${Object.entries(MOTIVOS_ALT).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>
+      <button type="button" class="btnAlteracao">Pedir alteração (volta para a Entrada)</button>
+    </div>` : ""}
+    <div class="erro erroAcao oculto"></div>`;
+}
+
+function ligarAcoes(id) {
+  const box = document.querySelector(`.ped[data-id="${id}"] .ped-corpo`);
+  if (!box) return;
+  const enviar = (acao) => enviarAcao(id, acao, box);
+  box.querySelector(".btnMensagem")?.addEventListener("click", () => enviar("mensagem"));
+  box.querySelector(".btnResponder")?.addEventListener("click", () => enviar("responder"));
+  box.querySelector(".btnAlteracao")?.addEventListener("click", () => enviar("alteracao"));
+}
+
+async function enviarAcao(id, acao, box) {
+  const erro = box.querySelector(".erroAcao");
+  const falha = (t) => { erro.textContent = t; mostrar(erro, true); };
+  mostrar(erro, false);
+  const texto = box.querySelector(".txtAcao").value.trim();
+  const motivo = box.querySelector(".motivoAlt")?.value || "";
+  const arquivos = [...box.querySelector(".arqAcao").files];
+  if (texto.length < 3) return falha("Escreva a mensagem.");
+  if (acao === "alteracao" && !motivo) return falha("Escolha o motivo da alteração.");
+  if (arquivos.some(f => f.size > 10 * 1024 * 1024)) return falha("Arquivo acima de 10 MB: mande o link no texto.");
+  if (acao === "alteracao" && !confirm("Pedir alteração? O card volta para a Entrada do desenvolvimento como nova rodada.")) return;
+
+  const fd = new FormData();
+  fd.append("dados", JSON.stringify({ id, acao, texto, motivo }));
+  arquivos.forEach(f => fd.append("arquivos", f, f.name));
+  const botoes = box.querySelectorAll("button"); botoes.forEach(b => b.disabled = true);
+  try {
+    const { data: s } = await sb.auth.getSession();
+    const r = await fetch(ACAO_URL, { method: "POST", headers: { Authorization: "Bearer " + s.session.access_token, apikey: SUPABASE_ANON_KEY }, body: fd });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) return falha((j.erro || `Erro ${r.status}`) + (j.detalhe ? ` (${j.detalhe})` : ""));
+    await carregarMeus();
+  } catch (e) {
+    falha("Falha de conexão: " + (e.message || e));
+  } finally {
+    botoes.forEach(b => b.disabled = false);
+  }
+}
 </script>
 </body>
 </html>
