@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solicitação de Desenvolvimento · Label Tag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#F6F4EF; --card:#FFFFFF; --ink:#1E2A38; --muted:#5A6472; --line:#DDD8CC;
+    --accent:#2F6FDE; --accent-ink:#FFFFFF; --warn-bg:#FFF4D6; --warn-ink:#7A5200;
+    --err-bg:#FDE7E7; --err-ink:#9B1C1C; --ok-bg:#E3F4E8; --ok-ink:#1F6B3A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 'Public Sans',Arial,sans-serif}
+  header{background:var(--ink);color:#F6F4EF;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  header h1{font-size:18px;margin:0}
+  header small{opacity:.75}
+  main{max-width:760px;margin:0 auto;padding:16px}
+  section.bloco{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  section.bloco h2{font-size:17px;margin:0 0 12px;display:flex;gap:8px;align-items:center}
+  .num{background:var(--accent);color:var(--accent-ink);border-radius:999px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
+  .req::after{content:" *";color:var(--err-ink)}
+  input[type=text],input[type=email],input[type=number],input[type=date],input[type=url],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#FDFCFA;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  .linha{display:flex;gap:10px;flex-wrap:wrap}
+  .linha>*{flex:1 1 140px}
+  .radios{display:flex;gap:8px;flex-wrap:wrap}
+  .radios label,.chips label{font-weight:400;margin:0;display:inline-flex;gap:6px;align-items:center;
+    border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:#FDFCFA;cursor:pointer}
+  .radios input:checked+span,.chips input:checked+span{font-weight:700;color:var(--accent)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .ajuda{color:var(--muted);font-size:13px;margin:4px 0 0}
+  .opcao{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px;margin-bottom:12px;background:#FDFCFA}
+  .opcao-topo{display:flex;justify-content:space-between;align-items:center}
+  .opcao-topo strong{font-size:15px}
+  button{font:inherit;border-radius:8px;border:1px solid var(--line);background:#FDFCFA;color:var(--ink);padding:10px 14px;cursor:pointer}
+  button.primario{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;width:100%;padding:14px;font-size:17px}
+  button.mini{padding:6px 10px;font-size:13px}
+  button:disabled{opacity:.6;cursor:wait}
+  .aviso{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px}
+  .erro{background:var(--err-bg);color:var(--err-ink);border-radius:8px;padding:10px 12px;margin:10px 0}
+  .ok{background:var(--ok-bg);color:var(--ok-ink);border-radius:12px;padding:20px}
+  details summary{cursor:pointer;font-weight:700;font-size:17px}
+  .oculto{display:none!important}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Solicitação de Desenvolvimento</h1><small>Label Tag · comercial → desenvolvimento</small></div>
+  <button id="btnSair" class="mini oculto" type="button">Sair</button>
+</header>
+
+<main>
+  <!-- ============ LOGIN ============ -->
+  <section id="telaLogin" class="bloco oculto">
+    <h2>Entrar</h2>
+    <p class="ajuda">Use seu e-mail @labeltag.com.br. Você recebe um link de acesso.</p>
+    <label for="loginEmail">E-mail</label>
+    <input id="loginEmail" type="email" placeholder="vendas2@labeltag.com.br" autocomplete="email">
+    <div id="loginErro" class="erro oculto"></div>
+    <div id="loginEnviado" class="aviso oculto">Link enviado. Abra o e-mail <b>neste mesmo aparelho e navegador</b> e clique em "Sign in". Pode fechar esta aba.</div>
+    <p><button id="btnLogin" class="primario" type="button">Enviar link de acesso</button></p>
+  </section>
+
+  <!-- ============ FORMULÁRIO ============ -->
+  <form id="form" class="oculto" novalidate>
+    <section class="bloco">
+      <h2><span class="num">1</span>Cliente</h2>
+      <label class="req" for="cliente">Cliente</label>
+      <input id="cliente" type="text" list="listaClientes" placeholder="Digite o nome ou o código">
+      <datalist id="listaClientes"></datalist>
+      <div class="radios" style="margin-top:8px">
+        <label><input type="checkbox" id="clienteNovo"><span>Cliente novo (sem cadastro)</span></label>
+      </div>
+      <div class="linha">
+        <div><label id="lblPasta" class="req" for="pasta">Pasta</label>
+          <input id="pasta" type="text" list="listaPastas" placeholder="ex.: 1798"><datalist id="listaPastas"></datalist></div>
+        <div><label for="representante">Representante</label><input id="representante" type="text"></div>
+      </div>
+      <label for="segmento">Segmento</label>
+      <input id="segmento" type="text" list="listaSegmentos" placeholder="fitness, praia, lingerie, infantil…">
+      <datalist id="listaSegmentos"><option>Fitness</option><option>Moda praia</option><option>Lingerie</option><option>Infantil</option><option>Casual</option><option>Uniformes</option><option>Calçados</option><option>Móveis</option></datalist>
+    </section>
+
+    <section class="bloco">
+      <h2><span class="num">2</span>Tipo de pedido</h2>
+      <div class="radios">
+        <label><input type="radio" name="tipo" value="novo"><span>Desenvolvimento novo</span></label>
+        <label><input type="radio" name="tipo" value="alteracao"><span>Alterar código existente</span></label>
+        <label><input type="radio" name="tipo" value="cor_medida"><span>Nova cor ou medida em código existente</span></label>
+      </div>
+      <div id="boxCodigoBase" class="oculto">
+        <label class="req" for="codigoBase">Código completo</label>
+        <input id="codigoBase" type="text" placeholder="ex.: 4238.0028">
+        <p class="ajuda">Amostra que já saiu exige código novo: a alteração não substitui o existente.</p>
+      </div>
+    </section>
+
+    <section class="bloco">
+      <h2><span class="num">3</span>Arte</h2>
+      <label class="req">A arte é vetorial (AI, CDR, EPS, SVG ou PDF vetorial)?</label>
+      <div class="radios">
+        <label><input type="radio" name="vetorial" value="sim"><span>Sim</span></label>
+        <label><input type="radio" name="vetorial" value="nao"><span>Não</span></label>
+      </div>
+      <div id="boxRedesenho" class="oculto">
+        <label class="req">O cliente aceita redesenho?</label>
+        <div class="radios">
+          <label><input type="radio" name="redesenho" value="sim"><span>Sim</span></label>
+          <label><input type="radio" name="redesenho" value="nao"><span>Não</span></label>
+          <label><input type="radio" name="redesenho" value="nao_sei"><span>Não sei</span></label>
+        </div>
+        <p class="ajuda">Arte feita a partir de imagem vale só para orçamento.</p>
+      </div>
+      <label for="arquivos">Arquivos da arte e referências</label>
+      <input id="arquivos" type="file" multiple>
+      <p class="ajuda">Até 10 MB por arquivo. Abra o arquivo antes de enviar: confira que não está em branco.</p>
+      <div id="avisoArquivos"></div>
+      <label for="arteLink">Ou link (Drive, WeTransfer)</label>
+      <input id="arteLink" type="url" placeholder="https://…">
+      <label for="referencia">O que a referência mostra?</label>
+      <input id="referencia" type="text" placeholder="forma, técnica, cor… ex.: quer igual à etiqueta da foto, mas no silicone">
+    </section>
+
+    <section class="bloco">
+      <h2><span class="num">4</span>Opções — todas neste pedido</h2>
+      <p class="ajuda">Monte aqui TODAS as opções que o cliente quer ver. Opção esquecida vira outro pedido depois.</p>
+      <div id="opcoes"></div>
+      <button type="button" id="btnAddOpcao">+ Adicionar opção</button>
+    </section>
+
+    <section class="bloco">
+      <details id="seSouber">
+        <summary>Se souber: aplicação, quantidade, preço e prazo</summary>
+        <label>Fixação</label>
+        <div class="radios">
+          <label><input type="radio" name="fixacao" value="termocolante"><span>Termocolante</span></label>
+          <label><input type="radio" name="fixacao" value="autocolante"><span>Autocolante</span></label>
+          <label><input type="radio" name="fixacao" value="costura"><span>Costura</span></label>
+          <label><input type="radio" name="fixacao" value="nao_sei"><span>Não sei</span></label>
+        </div>
+        <div class="linha">
+          <div><label for="local">Onde aplica na peça</label><input id="local" type="text" placeholder="gola, cós, manga, lado externo…"></div>
+          <div><label for="tecido">Tecido</label><input id="tecido" type="text" placeholder="ex.: suplex, malha, knit"></div>
+        </div>
+        <label>O tecido estica?</label>
+        <div class="radios">
+          <label><input type="radio" name="estica" value="sim"><span>Sim</span></label>
+          <label><input type="radio" name="estica" value="nao"><span>Não</span></label>
+          <label><input type="radio" name="estica" value="nao_sei"><span>Não sei</span></label>
+        </div>
+        <div class="linha">
+          <div><label for="quantidade">Quantidade por pedido</label><input id="quantidade" type="text" placeholder="ex.: 2.000 peças"></div>
+          <div><label for="preco">Preço-alvo por peça</label><input id="preco" type="text" placeholder="ex.: até R$ 1,50"></div>
+        </div>
+        <div class="linha">
+          <div><label for="prazo">Precisa até</label><input id="prazo" type="date"></div>
+          <div><label for="prazoMotivo">Motivo do prazo</label><input id="prazoMotivo" type="text" placeholder="visita, coleção, feira"></div>
+        </div>
+        <label for="obs">Observações</label>
+        <textarea id="obs"></textarea>
+      </details>
+    </section>
+
+    <div id="formErro" class="erro oculto"></div>
+    <button id="btnEnviar" class="primario" type="submit">Enviar ao Desenvolvimento</button>
+    <p class="ajuda" style="text-align:center">Tudo que for combinado depois, inclusive por WhatsApp, vai como comentário no card.</p>
+  </form>
+
+  <!-- ============ SUCESSO ============ -->
+  <section id="telaOk" class="ok oculto">
+    <h2 style="margin-top:0">Pedido enviado</h2>
+    <p id="okTexto"></p>
+    <p><button type="button" id="btnNovo" class="primario">Fazer outro pedido</button></p>
+  </section>
+</main>
+
+<template id="tplOpcao">
+  <div class="opcao">
+    <div class="opcao-topo"><strong class="tit">Opção</strong>
+      <span><button type="button" class="mini dup">Duplicar</button> <button type="button" class="mini del">Remover</button></span></div>
+    <div class="linha">
+      <div><label class="req">Técnica</label><select class="tecnica"><option value="">Escolha…</option></select></div>
+      <div style="flex:0 1 auto;align-self:end"><label class="radios" style="border:none;padding:0"><input type="checkbox" class="sugerir"><span>Deixar o desenvolvimento sugerir</span></label></div>
+    </div>
+    <div class="linha">
+      <div><label class="req">Largura (mm)</label><input type="number" class="larg" min="0" step="0.1" inputmode="decimal"></div>
+      <div><label class="req">Altura (mm)</label><input type="number" class="alt" min="0" step="0.1" inputmode="decimal"></div>
+      <div><label>Proporcional</label><select class="prop"><option value="">—</option><option value="altura">Altura proporcional</option><option value="largura">Largura proporcional</option></select></div>
+    </div>
+    <div class="linha">
+      <div><label class="req">Cor da base</label><input type="text" class="corBase" placeholder="Pantone, TPG ou código da cartela"></div>
+      <div><label>Cor da escrita</label><input type="text" class="corEscrita" placeholder="ex.: off white TPG 11-0507"></div>
+    </div>
+    <label>Acabamento</label>
+    <div class="chips">
+      <label><input type="checkbox" value="textura"><span>Textura</span></label>
+      <label><input type="checkbox" value="brilho"><span>Brilho</span></label>
+      <label><input type="checkbox" value="fosco"><span>Fosco</span></label>
+      <label><input type="checkbox" value="relevo"><span>Relevo</span></label>
+      <label><input type="checkbox" value="gravacao"><span>Gravação</span></label>
+      <label><input type="checkbox" value="letra solta"><span>Letra solta</span></label>
+      <label><input type="checkbox" value="placa"><span>Placa</span></label>
+    </div>
+    <label>Obs. desta opção</label><input type="text" class="obsOp">
+    <div class="avisosOp"></div>
+  </div>
+</template>
+
+<script>
+// ====== CONFIGURAÇÃO (preencher) ======
+const SUPABASE_URL = "https://qbdzzngcwxljomqiboqh.supabase.co";   // Settings > API > Project URL
+const SUPABASE_ANON_KEY = "sb_publishable_JIFQyxCn9MYZwc_MFJfUNA_F3saGuEp";                  // Settings > API > anon public
+// ======================================
+
+const FUNCAO_URL = SUPABASE_URL + "/functions/v1/dev-solicitacao";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = sb.schema("desenvolvimento");
+const $ = (id) => document.getElementById(id);
+const mostrar = (el, sim) => el.classList.toggle("oculto", !sim);
+
+let clientes = [], pastas = [], tecnicas = [], limites = [];
+let sessao = null;
+
+// ---------- LOGIN (link mágico) ----------
+$("btnLogin").onclick = async () => {
+  const email = $("loginEmail").value.trim().toLowerCase();
+  mostrar($("loginErro"), false);
+  if (!email.endsWith("@labeltag.com.br")) return erroLogin("Use seu e-mail @labeltag.com.br.");
+  $("btnLogin").disabled = true;
+  try {
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname },
+    });
+    if (error) throw error;
+    mostrar($("loginEnviado"), true);
+    $("btnLogin").textContent = "Reenviar link";
+  } catch (e) {
+    erroLogin(e.message || String(e));
+  } finally {
+    $("btnLogin").disabled = false;
+  }
+};
+function erroLogin(t){ $("loginErro").textContent = t; mostrar($("loginErro"), true); }
+$("btnSair").onclick = () => sb.auth.signOut();
+
+sb.auth.onAuthStateChange((_ev, s) => { sessao = s; atualizarTela(); });
+sb.auth.getSession().then(({ data }) => { sessao = data.session; atualizarTela(); });
+
+let cadastrosCarregados = false;
+async function atualizarTela(){
+  const logado = !!sessao;
+  mostrar($("telaLogin"), !logado);
+  mostrar($("btnSair"), logado);
+  mostrar($("form"), logado && $("telaOk").classList.contains("oculto"));
+  if (logado && !cadastrosCarregados) { cadastrosCarregados = true; await carregarCadastros(); }
+}
+
+// ---------- CADASTROS ----------
+async function lerTudo(tabela, colunas){
+  const tudo = []; const passo = 1000;
+  for (let de = 0; ; de += passo) {
+    const { data, error } = await db.from(tabela).select(colunas).range(de, de + passo - 1);
+    if (error) throw error;
+    tudo.push(...data);
+    if (data.length < passo) break;
+  }
+  return tudo;
+}
+async function carregarCadastros(){
+  try {
+    [clientes, pastas, tecnicas, limites] = await Promise.all([
+      lerTudo("clientes", "codigo,nome,representante_nome"),
+      lerTudo("pastas", "pasta,cliente_codigo"),
+      lerTudo("tecnicas", "nome,ativa,ordem"),
+      lerTudo("limites_tecnicos", "tecnica,regra,min_largura_mm,min_altura_mm,min_traco_mm,aceita_letra_solta,aceita_textura,validado"),
+    ]);
+  } catch (e) {
+    $("formErro").textContent = "Não consegui carregar os cadastros: " + (e.message || e);
+    mostrar($("formErro"), true);
+  }
+  tecnicas = tecnicas.filter(t => t.ativa).sort((a,b) => a.ordem - b.ordem);
+  $("listaClientes").innerHTML = clientes.map(c => `<option value="${esc(c.nome)} — ${esc(c.codigo)}">`).join("");
+  restaurarRascunho();
+  if (!document.querySelector("#opcoes .opcao")) adicionarOpcao();
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[ch]));
+
+function clienteEscolhido(){
+  const v = $("cliente").value.trim();
+  const m = v.match(/—\s*(\S+)$/);
+  const cod = m ? m[1] : v;
+  return clientes.find(c => c.codigo === cod) || null;
+}
+$("cliente").addEventListener("change", () => {
+  const c = clienteEscolhido();
+  const ps = c ? pastas.filter(p => p.cliente_codigo === c.codigo).map(p => p.pasta) : [];
+  $("listaPastas").innerHTML = ps.map(p => `<option value="${esc(p)}">`).join("");
+  if (ps.length === 1 && !$("pasta").value) $("pasta").value = ps[0];
+  if (c && c.representante_nome && !$("representante").value) $("representante").value = c.representante_nome;
+});
+$("clienteNovo").addEventListener("change", () => {
+  $("lblPasta").classList.toggle("req", !$("clienteNovo").checked);
+});
+
+// ---------- TIPO / ARTE ----------
+document.querySelectorAll('input[name=tipo]').forEach(r => r.addEventListener("change", () => {
+  mostrar($("boxCodigoBase"), valorRadio("tipo") && valorRadio("tipo") !== "novo");
+}));
+document.querySelectorAll('input[name=vetorial]').forEach(r => r.addEventListener("change", () => {
+  mostrar($("boxRedesenho"), valorRadio("vetorial") === "nao");
+  checarArquivos();
+}));
+const valorRadio = (n) => (document.querySelector(`input[name=${n}]:checked`) || {}).value || "";
+
+const EXT_VETOR = ["ai","cdr","eps","svg"];
+const EXT_IMAGEM = ["png","jpg","jpeg","webp","gif","bmp","heic","tif","tiff"];
+$("arquivos").addEventListener("change", checarArquivos);
+function avisosArquivos(){
+  const fs = [...$("arquivos").files];
+  const av = [];
+  const ext = (f) => (f.name.split(".").pop() || "").toLowerCase();
+  const imagens = fs.filter(f => EXT_IMAGEM.includes(ext(f)));
+  const pdfs = fs.filter(f => ext(f) === "pdf");
+  const vetores = fs.filter(f => EXT_VETOR.includes(ext(f)));
+  const grandes = fs.filter(f => f.size > 10 * 1024 * 1024);
+  const vazios = fs.filter(f => f.size === 0);
+  if (valorRadio("vetorial") === "sim" && vetores.length === 0 && imagens.length && !pdfs.length)
+    av.push(`Marcado como vetorial, mas só há imagem (${imagens.map(f=>f.name).join(", ")}). Imagem não é vetor.`);
+  if (valorRadio("vetorial") === "sim" && pdfs.length && !vetores.length)
+    av.push("PDF pode ser só imagem por dentro. Confirme com quem mandou que é vetorial.");
+  if (grandes.length) av.push(`Acima de 10 MB, use o link: ${grandes.map(f=>f.name).join(", ")}.`);
+  if (vazios.length) av.push(`Arquivo vazio: ${vazios.map(f=>f.name).join(", ")}.`);
+  return av;
+}
+function checarArquivos(){
+  $("avisoArquivos").innerHTML = avisosArquivos().map(a => `<div class="aviso">⚠ ${esc(a)}</div>`).join("");
+}
+
+// ---------- OPÇÕES ----------
+$("btnAddOpcao").onclick = () => adicionarOpcao();
+function adicionarOpcao(dados){
+  const el = $("tplOpcao").content.firstElementChild.cloneNode(true);
+  const sel = el.querySelector(".tecnica");
+  sel.innerHTML = '<option value="">Escolha…</option>' + tecnicas.map(t => `<option>${esc(t.nome)}</option>`).join("");
+  if (dados) preencherOpcao(el, dados);
+  el.querySelector(".del").onclick = () => { if (document.querySelectorAll("#opcoes .opcao").length > 1) { el.remove(); renumerar(); salvarRascunho(); } };
+  el.querySelector(".dup").onclick = () => { adicionarOpcao(lerOpcao(el)); };
+  el.addEventListener("input", () => { checarOpcao(el); salvarRascunho(); });
+  el.addEventListener("change", () => { checarOpcao(el); salvarRascunho(); });
+  $("opcoes").appendChild(el);
+  renumerar(); checarOpcao(el);
+}
+function renumerar(){ document.querySelectorAll("#opcoes .opcao .tit").forEach((t,i) => t.textContent = `Opção ${i+1}`); }
+const num = (v) => v === "" || v === null || v === undefined ? null : Number(v);
+function lerOpcao(el){
+  return {
+    tecnica: el.querySelector(".tecnica").value,
+    sugerir_tecnica: el.querySelector(".sugerir").checked,
+    largura_mm: num(el.querySelector(".larg").value),
+    altura_mm: num(el.querySelector(".alt").value),
+    proporcional: el.querySelector(".prop").value || null,
+    cor_base: el.querySelector(".corBase").value.trim(),
+    cor_escrita: el.querySelector(".corEscrita").value.trim(),
+    acabamento: [...el.querySelectorAll(".chips input:checked")].map(i => i.value).join(", "),
+    obs: el.querySelector(".obsOp").value.trim(),
+  };
+}
+function preencherOpcao(el, o){
+  el.querySelector(".tecnica").value = o.tecnica || "";
+  el.querySelector(".sugerir").checked = !!o.sugerir_tecnica;
+  el.querySelector(".larg").value = o.largura_mm ?? "";
+  el.querySelector(".alt").value = o.altura_mm ?? "";
+  el.querySelector(".prop").value = o.proporcional || "";
+  el.querySelector(".corBase").value = o.cor_base || "";
+  el.querySelector(".corEscrita").value = o.cor_escrita || "";
+  const acab = (o.acabamento || "").split(",").map(s => s.trim());
+  el.querySelectorAll(".chips input").forEach(i => i.checked = acab.includes(i.value));
+  el.querySelector(".obsOp").value = o.obs || "";
+}
+// Avisos de limite técnico de UMA opção (texto puro)
+function avisosOpcao(o){
+  const av = [];
+  if (o.largura_mm !== null && o.altura_mm !== null && o.largura_mm > 0 && o.largura_mm <= 10 && o.altura_mm <= 10)
+    av.push(`Medida ${o.largura_mm} x ${o.altura_mm}: você digitou em cm? O campo é em mm.`);
+  if (!o.tecnica || o.sugerir_tecnica) return av;
+  const regras = limites.filter(l => l.tecnica === o.tecnica);
+  const acab = o.acabamento;
+  for (const l of regras) {
+    const nv = l.validado ? "" : " (regra ainda não validada)";
+    if (l.min_largura_mm && o.largura_mm !== null && o.largura_mm < l.min_largura_mm)
+      av.push(`${o.tecnica}: largura mínima ${l.min_largura_mm} mm${nv}.`);
+    if (l.min_altura_mm && o.altura_mm !== null && o.altura_mm < l.min_altura_mm)
+      av.push(`${o.tecnica}: altura mínima ${l.min_altura_mm} mm${nv}.`);
+    if (l.aceita_letra_solta === false && acab.includes("letra solta"))
+      av.push(`${o.tecnica}: não aceita letra solta${nv}.`);
+    if (l.aceita_textura === false && acab.includes("textura"))
+      av.push(`${o.tecnica}: não aceita textura${nv}.`);
+  }
+  if (acab.includes("letra solta") && acab.includes("textura"))
+    av.push("Letra solta com textura não é possível (regra citada pelo desenvolvimento).");
+  return av;
+}
+function checarOpcao(el){
+  const o = lerOpcao(el);
+  const av = avisosOpcao(o);
+  const info = (o.tecnica && !o.sugerir_tecnica) ? limites.filter(l => l.tecnica === o.tecnica).map(l => l.regra) : [];
+  el.querySelector(".avisosOp").innerHTML =
+    av.map(a => `<div class="aviso">⚠ ${esc(a)}</div>`).join("") +
+    (info.length ? `<p class="ajuda">Regras de ${esc(o.tecnica)}: ${info.map(esc).join(" · ")}</p>` : "");
+}
+
+// ---------- RASCUNHO (só neste navegador) ----------
+const CHAVE_RASCUNHO = "labeltag-dev-rascunho";
+const CAMPOS = ["cliente","pasta","representante","segmento","codigoBase","arteLink","referencia","local","tecido","quantidade","preco","prazo","prazoMotivo","obs"];
+function salvarRascunho(){
+  try {
+    const r = { campos: {}, radios: {}, novo: $("clienteNovo").checked, opcoes: [...document.querySelectorAll("#opcoes .opcao")].map(lerOpcao) };
+    CAMPOS.forEach(c => r.campos[c] = $(c).value);
+    ["tipo","vetorial","redesenho","fixacao","estica"].forEach(n => r.radios[n] = valorRadio(n));
+    localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(r));
+  } catch (_) {}
+}
+function restaurarRascunho(){
+  let r = null;
+  try { r = JSON.parse(localStorage.getItem(CHAVE_RASCUNHO) || "null"); } catch (_) {}
+  if (!r) return;
+  CAMPOS.forEach(c => { if (r.campos?.[c] !== undefined) $(c).value = r.campos[c]; });
+  Object.entries(r.radios || {}).forEach(([n,v]) => { const i = document.querySelector(`input[name=${n}][value="${v}"]`); if (i) { i.checked = true; i.dispatchEvent(new Event("change")); } });
+  $("clienteNovo").checked = !!r.novo; $("clienteNovo").dispatchEvent(new Event("change"));
+  (r.opcoes || []).forEach(o => adicionarOpcao(o));
+}
+function limparRascunho(){ try { localStorage.removeItem(CHAVE_RASCUNHO); } catch (_) {} }
+$("form").addEventListener("input", salvarRascunho);
+$("form").addEventListener("change", salvarRascunho);
+
+// ---------- ENVIO ----------
+function montarDados(){
+  const c = clienteEscolhido();
+  const novo = $("clienteNovo").checked;
+  return {
+    cliente_codigo: c && !novo ? c.codigo : null,
+    cliente_nome: c && !novo ? c.nome : $("cliente").value.trim(),
+    cliente_novo: novo,
+    pasta: $("pasta").value.trim() || null,
+    representante: $("representante").value.trim(),
+    segmento: $("segmento").value.trim(),
+    tipo: valorRadio("tipo") || null,
+    codigo_base: $("codigoBase").value.trim(),
+    arte_vetorial: valorRadio("vetorial") === "" ? null : valorRadio("vetorial") === "sim",
+    arte_link: $("arteLink").value.trim(),
+    aceita_redesenho: valorRadio("redesenho") || null,
+    referencia_obs: $("referencia").value.trim(),
+    opcoes: [...document.querySelectorAll("#opcoes .opcao")].map(lerOpcao),
+    fixacao: valorRadio("fixacao") || null,
+    local_aplicacao: $("local").value.trim(),
+    tecido: $("tecido").value.trim(),
+    tecido_estica: valorRadio("estica") || null,
+    quantidade_estimada: $("quantidade").value.trim(),
+    preco_alvo: $("preco").value.trim(),
+    prazo: $("prazo").value || null,
+    prazo_motivo: $("prazoMotivo").value.trim(),
+    observacoes: $("obs").value.trim(),
+    criado_por_nome: sessao?.user?.email || "",
+  };
+}
+// Espelho da validação da função (a função valida de novo)
+function faltasLocais(d, qtdArquivos){
+  const f = []; const v = (x) => x === null || x === undefined || String(x).trim() === "";
+  if (v(d.cliente_nome)) f.push("Cliente");
+  if (!d.cliente_novo && v(d.pasta)) f.push("Pasta (ou marque cliente novo)");
+  if (!d.tipo) f.push("Tipo de pedido");
+  if (d.tipo && d.tipo !== "novo" && v(d.codigo_base)) f.push("Código que será alterado");
+  if (d.arte_vetorial === null) f.push("Informar se a arte é vetorial");
+  if (d.arte_vetorial === false && !d.aceita_redesenho) f.push("Sem vetor: o cliente aceita redesenho?");
+  if (qtdArquivos === 0 && v(d.arte_link) && d.tipo === "novo") f.push("Arquivo da arte ou link");
+  d.opcoes.forEach((o,i) => {
+    const n = `Opção ${i+1}`;
+    if (!o.sugerir_tecnica && v(o.tecnica)) f.push(`${n}: técnica (ou "sugerir")`);
+    if (o.largura_mm === null && o.altura_mm === null) f.push(`${n}: medida em mm`);
+    if (v(o.cor_base) && v(o.cor_escrita)) f.push(`${n}: cor`);
+  });
+  return f;
+}
+
+$("form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  mostrar($("formErro"), false);
+  const d = montarDados();
+  const arquivos = [...$("arquivos").files];
+  const faltas = faltasLocais(d, arquivos.length);
+  if (faltas.length) return erroForm("Falta preencher: " + faltas.join(" · "));
+
+  d.avisos = [...avisosArquivos(), ...d.opcoes.flatMap((o,i) => avisosOpcao(o).map(a => `Opção ${i+1}: ${a}`))];
+  if (d.avisos.length && !confirm(`Há ${d.avisos.length} aviso(s):\n\n- ${d.avisos.join("\n- ")}\n\nEnviar mesmo assim? Os avisos vão junto no card.`)) return;
+
+  const fd = new FormData();
+  fd.append("dados", JSON.stringify(d));
+  arquivos.forEach(f => fd.append("arquivos", f, f.name));
+
+  $("btnEnviar").disabled = true; $("btnEnviar").textContent = "Enviando…";
+  try {
+    const { data: s } = await sb.auth.getSession();
+    const r = await fetch(FUNCAO_URL, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + s.session.access_token, apikey: SUPABASE_ANON_KEY },
+      body: fd,
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const det = j.faltas ? ": " + j.faltas.join(" · ") : (j.detalhe ? ` (${j.detalhe})` : "");
+      return erroForm((j.erro || `Erro ${r.status}`) + det);
+    }
+    limparRascunho();
+    $("okTexto").innerHTML = `Pedido <b>#${j.id}</b> criado no quadro do Desenvolvimento. ` +
+      (j.card_url ? `<a href="${esc(j.card_url)}" target="_blank" rel="noopener">Abrir o card</a>.` : "");
+    mostrar($("form"), false); mostrar($("telaOk"), true);
+    window.scrollTo(0, 0);
+  } catch (e) {
+    erroForm("Falha de conexão: " + (e.message || e) + ". O rascunho continua salvo; tente de novo.");
+  } finally {
+    $("btnEnviar").disabled = false; $("btnEnviar").textContent = "Enviar ao Desenvolvimento";
+  }
+});
+function erroForm(t){ $("formErro").textContent = t; mostrar($("formErro"), true); $("formErro").scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+$("btnNovo").onclick = () => location.reload();
+</script>
+</body>
+</html>
