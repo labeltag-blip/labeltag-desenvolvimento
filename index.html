@@ -78,6 +78,12 @@
   .acoes-ped{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
   .acoes-ped select{flex:1 1 200px;width:auto}
   button.forte{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+  .sync{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
+  .sync .bola{width:10px;height:10px;border-radius:50%;background:#9AA1AB}
+  .sync.s-ok .bola{background:#22A55A}
+  .sync.s-carregando .bola{background:#E8930C;animation:pulso 1s ease-in-out infinite}
+  .sync.s-erro .bola{background:#C62828}
+  @keyframes pulso{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.55}}
 </style>
 </head>
 <body>
@@ -224,6 +230,7 @@
       <label class="radios" style="border:none;padding:0;margin:0"><input type="checkbox" id="verTodos"><span>Ver de todos</span></label>
       <button type="button" class="mini" id="btnAtualizar">Atualizar</button>
     </div>
+    <p class="ajuda" style="margin:-4px 0 10px"><span id="sync" class="sync"><span class="bola"></span><span id="syncTxt">Ainda não atualizado</span></span></p>
     <div id="erroMeus" class="erro oculto"></div>
     <div id="listaMeus"></div>
   </section>
@@ -623,10 +630,36 @@ $("btnAtualizar").onclick = () => carregarMeus();
 $("verTodos").onchange = () => carregarMeus();
 $("buscaMeus").oninput = () => desenharMeus();
 
-async function carregarMeus() {
-  try { await carregarMeusInterno(); }
-  catch (e) { $("erroMeus").textContent = "Não consegui carregar os pedidos: " + (e.message || e); mostrar($("erroMeus"), true); }
+// ---- indicador de atualização (bolinha + data/hora), igual aos outros painéis ----
+let ultimaAtualizacao = null, carregandoMeus = false;
+const AUTO_SEG = 60;          // atualiza sozinho a cada 60 s com a aba aberta
+function marcarSync(estado) {
+  $("sync").className = "sync s-" + estado;
+  if (estado === "carregando") { $("syncTxt").textContent = "Atualizando…"; return; }
+  if (estado === "erro") { $("syncTxt").textContent = "Falha ao atualizar" + (ultimaAtualizacao ? " · última: " + dataHora(ultimaAtualizacao) : ""); return; }
+  if (!ultimaAtualizacao) return;
+  const min = Math.floor((Date.now() - ultimaAtualizacao) / 60000);
+  $("sync").className = "sync " + (min >= 5 ? "" : "s-ok");
+  $("syncTxt").textContent = "Atualizado " + dataHora(ultimaAtualizacao) + (min >= 1 ? ` · há ${min} min` : "");
 }
+async function carregarMeus() {
+  if (carregandoMeus) return;
+  carregandoMeus = true; marcarSync("carregando");
+  try { await carregarMeusInterno(); ultimaAtualizacao = Date.now(); marcarSync("ok"); }
+  catch (e) { $("erroMeus").textContent = "Não consegui carregar os pedidos: " + (e.message || e); mostrar($("erroMeus"), true); marcarSync("erro"); }
+  finally { carregandoMeus = false; }
+}
+setInterval(() => {
+  if (!sessao || document.hidden) return;
+  const abertaMeus = !$("telaMeus").classList.contains("oculto");
+  const temTexto = [...document.querySelectorAll(".txtAcao")].some(t => t.value.trim());
+  // não recarrega enquanto a vendedora está escrevendo (para não apagar o texto)
+  if (abertaMeus && !temTexto && ultimaAtualizacao && Date.now() - ultimaAtualizacao >= AUTO_SEG * 1000) carregarMeus();
+  else marcarSync($("sync").classList.contains("s-erro") ? "erro" : "ok");
+}, 15000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && sessao && !$("telaMeus").classList.contains("oculto")) carregarMeus();
+});
 async function carregarMeusInterno() {
   mostrar($("erroMeus"), false);
   if (!pedidos.length) $("listaMeus").innerHTML = '<p class="ajuda">Carregando…</p>';
