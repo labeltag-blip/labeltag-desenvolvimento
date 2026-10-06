@@ -83,6 +83,19 @@
   .sync.s-ok .bola{background:#22A55A}
   .sync.s-carregando .bola{background:#E8930C;animation:pulso 1s ease-in-out infinite}
   .sync.s-erro .bola{background:#C62828}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .kpi .v{font-size:26px;font-weight:700;line-height:1.1}
+  .kpi .r{font-size:13px;color:var(--muted)}
+  .kpi.alerta .v{color:var(--err-ink)}
+  table.tab{width:100%;border-collapse:collapse;font-size:14px}
+  table.tab th,table.tab td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+  table.tab th{font-size:12px;color:var(--muted);font-weight:700}
+  table.tab td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .barras{display:grid;grid-template-columns:minmax(120px,180px) 1fr auto;gap:6px 10px;align-items:center;font-size:14px}
+  .barras .trilho{height:14px;background:#ECE8DF;border-radius:4px;overflow:hidden}
+  .barras .barra{height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+  .barras .val{font-variant-numeric:tabular-nums;color:var(--ink);min-width:70px;text-align:right}
   @keyframes pulso{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.55}}
 </style>
 </head>
@@ -108,6 +121,7 @@
   <nav id="abas" class="abas oculto">
     <button type="button" data-aba="novo" class="ativa">Novo pedido</button>
     <button type="button" data-aba="meus">Meus pedidos<span id="badge" class="badge oculto"></span></button>
+    <button type="button" data-aba="ind" id="abaInd" class="oculto">Indicadores</button>
   </nav>
 
   <div id="abaNovo">
@@ -223,6 +237,17 @@
   </section>
   </div>
 
+  <!-- ============ INDICADORES (gestão) ============ -->
+  <section id="telaInd" class="oculto">
+    <div class="barra">
+      <select id="periodoInd" style="width:auto"><option value="30">Últimos 30 dias</option><option value="90" selected>Últimos 90 dias</option><option value="365">Último ano</option></select>
+      <button type="button" class="mini" id="btnInd">Atualizar</button>
+      <span id="syncInd" class="sync"><span class="bola"></span><span id="syncIndTxt"></span></span>
+    </div>
+    <div id="erroInd" class="erro oculto"></div>
+    <div id="conteudoInd"></div>
+  </section>
+
   <!-- ============ MEUS PEDIDOS ============ -->
   <section id="telaMeus" class="oculto">
     <div class="barra">
@@ -316,6 +341,7 @@ async function atualizarTela(){
   mostrar($("btnSair"), logado);
   mostrar($("form"), logado && $("telaOk").classList.contains("oculto"));
   mostrar($("abas"), logado);
+  mostrar($("abaInd"), logado && GESTORES.includes((sessao?.user?.email || "").toLowerCase()));
   if (!logado) { mostrar($("telaMeus"), false); mostrar($("abaNovo"), true); }
   if (logado && !cadastrosCarregados) { cadastrosCarregados = true; setTimeout(carregarMeus, 0); await carregarCadastros(); }
 }
@@ -591,6 +617,140 @@ function erroForm(t){ $("formErro").textContent = t; mostrar($("formErro"), true
 $("btnNovo").onclick = () => location.reload();
 
 // =====================================================================
+// INDICADORES — só aparece para a gestão (a regra de leitura do banco é a mesma de todos)
+// =====================================================================
+const GESTORES = ["daiano@labeltag.com.br", "natalia@labeltag.com.br", "desenvolvimento@labeltag.com.br"];
+const ETAPAS = ["Entrada", "Em criação", "Conferência", "Devolvido ao comercial", "Enviado ao comercial", "Aprovado pelo cliente"];
+const PARADO_H = 48;           // pedido sem andar há mais de 48 h corridas
+const ETAPAS_ABERTAS = ["entrada", "em criação", "conferência", "devolvido ao comercial"];
+
+const mediana = (xs) => { const v = xs.filter(x => Number.isFinite(x)).sort((a, b) => a - b); if (!v.length) return null; const m = Math.floor(v.length / 2); return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2; };
+const fmtH = (h) => h == null ? "—" : h < 1 ? "< 1 h" : h < 24 ? `${Math.round(h)} h` : `${(h / 24).toFixed(1).replace(".", ",")} dias`;
+const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "—";
+const horas = (a, b) => (new Date(b) - new Date(a)) / 3600000;
+
+$("btnInd").onclick = () => carregarInd();
+$("periodoInd").onchange = () => carregarInd();
+
+async function carregarInd() {
+  mostrar($("erroInd"), false);
+  $("syncInd").className = "sync s-carregando"; $("syncIndTxt").textContent = "Atualizando…";
+  try {
+    const dias = Number($("periodoInd").value);
+    const desde = new Date(Date.now() - dias * 864e5).toISOString();
+    const { data: sols, error } = await db.from("solicitacoes")
+      .select("id,criado_em,criado_por_email,cliente_nome,status,rodada,trello_card_url")
+      .gte("criado_em", desde).order("id", { ascending: false }).limit(2000);
+    if (error) throw error;
+    const evs = {};
+    const ids = (sols || []).map(x => x.id);
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data: ev, error: e2 } = await db.from("eventos")
+        .select("id,solicitacao_id,em,tipo,para_lista,motivo,motivo_alteracao,autor")
+        .in("solicitacao_id", ids.slice(i, i + 100)).order("em", { ascending: true }).limit(10000);
+      if (e2) throw e2;
+      (ev || []).forEach(e => (evs[e.solicitacao_id] ||= []).push(e));
+    }
+    desenharInd(sols || [], evs);
+    $("syncInd").className = "sync s-ok"; $("syncIndTxt").textContent = "Atualizado " + dataHora(Date.now());
+  } catch (e) {
+    $("erroInd").textContent = "Não consegui carregar os indicadores: " + (e.message || e); mostrar($("erroInd"), true);
+    $("syncInd").className = "sync s-erro"; $("syncIndTxt").textContent = "Falha ao atualizar";
+  }
+}
+
+// Linha do tempo de um pedido: em que lista esteve e quanto tempo ficou em cada uma
+function segmentos(sol, evs) {
+  const segs = []; let lista = "Entrada", ini = sol.criado_em;
+  for (const e of evs) {
+    if (!e.para_lista || e.tipo === "comentario" || e.tipo === "mensagem") continue;
+    segs.push({ lista, h: horas(ini, e.em), fechado: true });
+    lista = e.para_lista; ini = e.em;
+  }
+  segs.push({ lista, h: horas(ini, Date.now()), fechado: false });
+  return segs;
+}
+
+function desenharInd(sols, evs) {
+  const n = sols.length;
+  if (!n) { $("conteudoInd").innerHTML = '<p class="ajuda">Nenhum pedido no período.</p>'; return; }
+  const linhas = sols.map(sol => {
+    const ev = evs[sol.id] || [];
+    const devolvido = ev.some(e => e.tipo === "devolvido");
+    const entrega = ev.find(e => norm(e.para_lista) === "enviado ao comercial");
+    const segs = segmentos(sol, ev);
+    const atual = segs.at(-1);
+    return { sol, ev, devolvido, alterado: (sol.rodada || 1) > 1,
+      hEntrega: entrega ? horas(sol.criado_em, entrega.em) : null, segs,
+      parado: ETAPAS_ABERTAS.includes(norm(sol.status)) && atual.h > PARADO_H ? atual.h : null };
+  });
+
+  const devolvidos = linhas.filter(l => l.devolvido).length;
+  const alterados = linhas.filter(l => l.alterado).length;
+  const medEntrega = mediana(linhas.map(l => l.hEntrega));
+  const parados = linhas.filter(l => l.parado != null).sort((a, b) => b.parado - a.parado);
+
+  // tempo por etapa (só passagens já encerradas)
+  const porEtapa = ETAPAS.map(et => ({ et, med: mediana(linhas.flatMap(l => l.segs.filter(s => s.fechado && norm(s.lista) === norm(et)).map(s => s.h))),
+    qtd: linhas.reduce((t, l) => t + l.segs.filter(s => s.fechado && norm(s.lista) === norm(et)).length, 0) }))
+    .filter(x => x.qtd > 0);
+  const maxEt = Math.max(1, ...porEtapa.map(x => x.med || 0));
+
+  // motivos de alteração
+  const MOT = Object.keys(MOTIVOS_ALT).map(k => ({ k, n: linhas.reduce((t, l) => t + l.ev.filter(e => e.tipo === "alteracao" && e.motivo_alteracao === k).length, 0) }));
+  const maxMot = Math.max(1, ...MOT.map(m => m.n));
+
+  // por vendedora
+  const grupos = {};
+  linhas.forEach(l => (grupos[l.sol.criado_por_email] ||= []).push(l));
+  const vend = Object.entries(grupos).map(([em, ls]) => ({ em, n: ls.length,
+    dev: ls.filter(l => l.devolvido).length, alt: ls.filter(l => l.alterado).length,
+    med: mediana(ls.map(l => l.hEntrega)) })).sort((a, b) => b.n - a.n);
+
+  // últimos motivos de devolução (texto livre do desenvolvimento)
+  const motDev = linhas.flatMap(l => l.ev.filter(e => e.tipo === "comentario" && e.motivo).map(e => ({ e, sol: l.sol })))
+    .sort((a, b) => new Date(b.e.em) - new Date(a.e.em)).slice(0, 10);
+
+  const barras = (itens, max, rot, val, dica) => `<div class="barras">${itens.map(i => `
+      <span>${esc(rot(i))}</span>
+      <div class="trilho" title="${esc(dica(i))}"><div class="barra" style="width:${Math.max(2, 100 * (val(i) || 0) / max)}%"></div></div>
+      <span class="val">${esc(dica(i).split(" · ")[0])}</span>`).join("")}</div>`;
+
+  $("conteudoInd").innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="v">${n}</div><div class="r">pedidos no período</div></div>
+      <div class="kpi"><div class="v">${pct(devolvidos, n)}</div><div class="r">devolvidos ao comercial (${devolvidos})</div></div>
+      <div class="kpi"><div class="v">${pct(alterados, n)}</div><div class="r">tiveram alteração (${alterados})</div></div>
+      <div class="kpi"><div class="v">${fmtH(medEntrega)}</div><div class="r">mediana até a 1ª entrega</div></div>
+      <div class="kpi ${parados.length ? "alerta" : ""}"><div class="v">${parados.length}</div><div class="r">parados há mais de ${PARADO_H} h</div></div>
+    </div>
+
+    <section class="bloco"><h2>Tempo em cada etapa <span class="ajuda" style="font-weight:400">mediana, horas corridas</span></h2>
+      ${porEtapa.length ? barras(porEtapa, maxEt, x => x.et, x => x.med, x => `${fmtH(x.med)} · ${x.qtd} passagens`) : '<p class="ajuda">Ainda sem movimentações registradas.</p>'}
+    </section>
+
+    <section class="bloco"><h2>Por vendedora</h2>
+      <div style="overflow-x:auto"><table class="tab"><thead><tr><th>Vendedora</th><th style="text-align:right">Pedidos</th><th style="text-align:right">Devolvidos</th><th style="text-align:right">Com alteração</th><th style="text-align:right">Até 1ª entrega</th></tr></thead>
+      <tbody>${vend.map(v => `<tr><td>${esc(v.em.split("@")[0])}</td><td class="n">${v.n}</td><td class="n">${pct(v.dev, v.n)}</td><td class="n">${pct(v.alt, v.n)}</td><td class="n">${fmtH(v.med)}</td></tr>`).join("")}</tbody></table></div>
+    </section>
+
+    <section class="bloco"><h2>Motivos de alteração</h2>
+      ${MOT.some(m => m.n) ? barras(MOT, maxMot, m => MOTIVOS_ALT[m.k], m => m.n, m => `${m.n} · ${MOTIVOS_ALT[m.k]}`) : '<p class="ajuda">Nenhuma alteração no período.</p>'}
+    </section>
+
+    <section class="bloco"><h2>Parados há mais de ${PARADO_H} h</h2>
+      ${parados.length ? `<table class="tab"><thead><tr><th>Pedido</th><th>Etapa</th><th style="text-align:right">Parado há</th></tr></thead><tbody>
+        ${parados.slice(0, 20).map(l => `<tr><td>${l.sol.trello_card_url ? `<a href="${esc(l.sol.trello_card_url)}" target="_blank" rel="noopener">#${l.sol.id}</a>` : "#" + l.sol.id} · ${esc(l.sol.cliente_nome)}</td><td>${esc(l.sol.status)}</td><td class="n">${fmtH(l.parado)}</td></tr>`).join("")}
+      </tbody></table>` : '<p class="ajuda">Nenhum pedido parado.</p>'}
+    </section>
+
+    <section class="bloco"><h2>Últimos motivos de devolução</h2>
+      ${motDev.length ? `<ul class="linha-tempo">${motDev.map(m => `<li><span class="quando">${dataHora(m.e.em)}</span><b>#${m.sol.id} · ${esc(m.sol.cliente_nome)}</b><span class="txt">${esc(m.e.motivo)}</span></li>`).join("")}</ul>` : '<p class="ajuda">Nenhuma devolução no período.</p>'}
+    </section>
+    <p class="ajuda">Tempos em horas corridas (contando noite e fim de semana). "1ª entrega" = do envio do pedido até o card chegar em "Enviado ao comercial". Só entram pedidos feitos pelo formulário.</p>`;
+}
+
+// =====================================================================
 // MEUS PEDIDOS — status, conversa com o desenvolvimento e alterações
 // =====================================================================
 const ACAO_URL = SUPABASE_URL + "/functions/v1/dev-acao";
@@ -623,7 +783,9 @@ function irAba(a) {
   document.querySelectorAll("#abas button").forEach(b => b.classList.toggle("ativa", b.dataset.aba === a));
   mostrar($("abaNovo"), a === "novo");
   mostrar($("telaMeus"), a === "meus");
+  mostrar($("telaInd"), a === "ind");
   if (a === "meus") carregarMeus();
+  if (a === "ind") carregarInd();
 }
 document.querySelectorAll("#abas button").forEach(b => b.onclick = () => irAba(b.dataset.aba));
 $("btnAtualizar").onclick = () => carregarMeus();
@@ -721,7 +883,7 @@ function alternar(id) {
 function linhaEvento(e) {
   const quem = norm(e.autor) === meuEmail() ? "Você" : esc(e.autor || "—");
   const txt = (t) => t ? `<span class="txt">${esc(t)}</span>` : "";
-  const anexos = (e.payload?.anexos || []).length ? `<span class="txt">📎 ${esc(e.payload.anexos.join(", "))}</span>` : "";
+  const anexos = (e.payload?.anexos || []).length ? `<span class="txt">Anexos: ${esc(e.payload.anexos.join(", "))}</span>` : "";
   const q = `<span class="quando">${dataHora(e.em)}</span>`;
   switch (e.tipo) {
     case "criado": return `<li>${q}Pedido enviado</li>`;
