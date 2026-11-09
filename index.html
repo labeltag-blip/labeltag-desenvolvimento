@@ -49,6 +49,8 @@
   button.primario{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;width:100%;padding:14px;font-size:17px}
   button.mini{padding:6px 10px;font-size:13px}
   button:disabled{opacity:.6;cursor:wait}
+  .resBrief{margin-top:10px;border:1px solid var(--line,#e2e2e2);border-radius:8px;padding:10px 12px;font-size:14px}
+  .resBrief ul{margin:4px 0 0;padding-left:18px} .resBrief .falta{color:var(--warn-ink,#8A5A00)}
   .seloArq{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:7px 10px;border:1px solid var(--line,#e2e2e2);border-radius:8px;margin-top:6px;font-size:14px}
   .seloArq .nomeArq{font-weight:600;word-break:break-all}
   .seloArq .tagArq{font-size:12px;font-weight:700;padding:1px 8px;border-radius:10px;background:#eee}
@@ -292,7 +294,7 @@
 <body>
 <header>
   <div class="marca"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 285.4646 69.0025" role="img" aria-label="Label Tag"> <path fill-rule="nonzero" fill="currentColor" fill-opacity="1" d="M 235.449219 64.265625 L 238.347656 64.265625 L 236.898438 60.417969 Z M 239.273438 66.710938 L 238.605469 64.941406 L 235.191406 64.941406 L 234.523438 66.710938 L 233.761719 66.710938 L 236.527344 59.515625 L 237.269531 59.515625 L 240.035156 66.710938 Z M 227.339844 66.832031 C 226.25 66.832031 225.347656 66.476562 224.636719 65.753906 C 223.921875 65.035156 223.566406 64.15625 223.566406 63.113281 C 223.566406 62.070312 223.921875 61.191406 224.636719 60.472656 C 225.347656 59.75 226.25 59.390625 227.339844 59.390625 C 228.003906 59.390625 228.613281 59.550781 229.167969 59.871094 C 229.722656 60.1875 230.152344 60.617188 230.453125 61.160156 L 229.816406 61.53125 C 229.589844 61.089844 229.253906 60.742188 228.808594 60.480469 C 228.363281 60.222656 227.875 60.089844 227.339844 60.089844 C 226.441406 60.089844 225.707031 60.382812 225.140625 60.964844 C 224.570312 61.546875 224.285156 62.261719 224.285156 63.113281 C 224.285156 63.960938 224.570312 64.679688 225.140625 65.261719 C 225.707031 65.84375 226.441406 66.136719 227.339844 66.136719 C 227.875 66.136719 228.363281 66.003906 228.808594 65.746094 C 229.253906 65.484375 229.589844 65.132812 229.816406 64.695312 L 230.453125 65.054688 C 230.160156 65.597656 229.730469 66.027344 229.171875 66.351562 C 228.613281 66.671875 228.003906 66.832031 227.339844 66.832031 Z M 215.476562 60.195312 L 215.476562 63.152344 L 217.636719 63.152344 C 218.03125 63.152344 218.371094 63.007812 218.652344 62.71875 C 218.933594 62.425781 219.074219 62.078125 219.074219 61.675781 C 219.074219 61.261719 218.933594 60.914062 218.652344 60.625 C 218.371094 60.335938 218.03125 60.195312 217.636719 60.195312 Z M 219.175781 66.710938 L 217.496094 63.832031 L 215.476562 63.832031 L 215.476562 66.710938 L 214.757812 66.710938 L 214.757812 59.515625 L 217.636719 59.515625 C 218.230469 59.515625 218.738281 59.726562 219.160156 60.148438 C 219.582031 60.570312 219.792969 61.078125 219.792969 61.675781 C 219.792969 62.160156 219.648438 62.59375 219.355469 62.972656 C 219.066406 63.355469 218.695312 63.609375 218.242188 63.738281 L 220 66.710938 Z M 206.296875 64.265625 L 209.199219 64.265625 L 207.746094 60.417969 Z M 210.121094 66.710938 L 209.453125 64.941406 L 206.039062 64.941406 L 205.371094 66.710938 L 204.609375 66.710938 L 207.375 59.515625 L 208.117188 59.515625 L 210.882812 66.710938 Z M 200.734375 59.515625 L 200.734375 66.710938 L 200.015625 66.710938 L 200.015625 60.605469 L 197.496094 64.820312 L 197.394531 64.820312 L 194.875 60.605469 L 194.875 66.710938 L 194.15625 66.710938 L 194.15625 59.515625 L 195.039062 59.515625 L 197.445312 63.542969 L 199.851562 59.515625 Z M 183.125 64.265625 L 186.027344 64.265625 L 184.574219 60.417969 Z M 186.949219 66.710938 L 186.285156 64.941406 L 182.867188 64.941406 L 182.203125 66.710938 L 181.441406 66.710938 L 184.207031 59.515625 L 184.945312 59.515625 L 187.710938 66.710938 Z M 177.132812 66.136719 C 176.640625 66.601562 175.996094 66.832031 175.199219 66.832031 C 174.40625 66.832031 173.761719 66.601562 173.269531 66.136719 C 172.773438 65.667969 172.527344 65.046875 172.527344 64.265625 L 172.527344 59.515625 L 173.246094 59.515625 L 173.246094 64.265625 C 173.246094 64.839844 173.417969 65.296875 173.761719 65.632812 C 174.105469 65.96875 174.585938 66.136719 175.199219 66.136719 C 175.816406 66.136719 176.296875 65.96875 176.640625 65.632812 C 176.984375 65.296875 177.152344 64.839844 177.152344 64.265625 L 177.152344 59.515625 L 177.875 59.515625 L 177.875 64.265625 C 177.875 65.046875 177.628906 65.667969 177.132812 66.136719 Z M 166.019531 66.832031 C 165.363281 66.832031 164.800781 66.679688 164.332031 66.367188 C 163.859375 66.054688 163.535156 65.625 163.347656 65.074219 L 163.964844 64.714844 C 164.09375 65.160156 164.335938 65.511719 164.683594 65.761719 C 165.035156 66.011719 165.484375 66.136719 166.03125 66.136719 C 166.566406 66.136719 166.984375 66.015625 167.28125 65.78125 C 167.578125 65.542969 167.726562 65.230469 167.726562 64.839844 C 167.726562 64.464844 167.589844 64.179688 167.316406 63.988281 C 167.042969 63.792969 166.589844 63.597656 165.960938 63.390625 C 165.210938 63.144531 164.71875 62.945312 164.480469 62.792969 C 163.929688 62.464844 163.65625 61.988281 163.65625 61.367188 C 163.65625 60.753906 163.871094 60.273438 164.292969 59.921875 C 164.71875 59.566406 165.242188 59.390625 165.867188 59.390625 C 166.429688 59.390625 166.914062 59.539062 167.328125 59.828125 C 167.738281 60.121094 168.042969 60.492188 168.242188 60.945312 L 167.636719 61.285156 C 167.304688 60.488281 166.714844 60.089844 165.867188 60.089844 C 165.421875 60.089844 165.0625 60.199219 164.789062 60.417969 C 164.511719 60.640625 164.375 60.945312 164.375 61.335938 C 164.375 61.691406 164.5 61.957031 164.746094 62.136719 C 164.992188 62.316406 165.402344 62.496094 165.96875 62.679688 C 166.230469 62.769531 166.417969 62.832031 166.53125 62.871094 C 166.644531 62.910156 166.808594 62.96875 167.023438 63.054688 C 167.238281 63.140625 167.398438 63.21875 167.5 63.28125 C 167.605469 63.347656 167.730469 63.4375 167.875 63.550781 C 168.023438 63.664062 168.128906 63.777344 168.195312 63.890625 C 168.261719 64.003906 168.320312 64.140625 168.371094 64.300781 C 168.421875 64.460938 168.445312 64.632812 168.445312 64.820312 C 168.445312 65.429688 168.222656 65.917969 167.777344 66.285156 C 167.332031 66.652344 166.746094 66.832031 166.019531 66.832031 Z M 154.539062 66.855469 C 156.101562 66.855469 157.210938 66.03125 157.210938 64.644531 C 157.210938 63.125 155.988281 62.742188 154.898438 62.414062 C 153.777344 62.074219 153.601562 61.847656 153.601562 61.519531 C 153.601562 61.230469 153.859375 60.972656 154.375 60.972656 C 155.03125 60.972656 155.371094 61.292969 155.617188 61.808594 L 157.007812 60.996094 C 156.480469 59.9375 155.554688 59.371094 154.375 59.371094 C 153.128906 59.371094 151.957031 60.171875 151.957031 61.5625 C 151.957031 62.9375 153.007812 63.453125 154.074219 63.75 C 155.15625 64.046875 155.566406 64.222656 155.566406 64.664062 C 155.566406 64.941406 155.371094 65.25 154.589844 65.25 C 153.777344 65.25 153.335938 64.851562 153.078125 64.253906 L 151.660156 65.074219 C 152.0625 66.136719 153.027344 66.855469 154.539062 66.855469 Z M 144.660156 65.25 C 143.488281 65.25 142.5625 64.398438 142.5625 63.113281 C 142.5625 61.828125 143.488281 60.972656 144.660156 60.972656 C 145.832031 60.972656 146.757812 61.828125 146.757812 63.113281 C 146.757812 64.398438 145.832031 65.25 144.660156 65.25 Z M 144.660156 66.855469 C 146.726562 66.855469 148.402344 65.230469 148.402344 63.113281 C 148.402344 60.996094 146.726562 59.371094 144.660156 59.371094 C 142.59375 59.371094 140.917969 60.996094 140.917969 63.113281 C 140.917969 65.230469 142.59375 66.855469 144.660156 66.855469 Z M 137.042969 59.515625 L 135.398438 59.515625 L 133.445312 62.710938 L 131.492188 59.515625 L 129.847656 59.515625 L 129.847656 66.710938 L 131.492188 66.710938 L 131.492188 62.527344 L 133.351562 65.582031 L 133.539062 65.582031 L 135.398438 62.527344 L 135.398438 66.710938 L 137.042969 66.710938 Z M 121.941406 64.039062 L 122.785156 61.394531 L 123.628906 64.039062 Z M 124.480469 66.710938 L 126.28125 66.710938 L 123.832031 59.515625 L 121.738281 59.515625 L 119.289062 66.710938 L 121.089844 66.710938 L 121.449219 65.582031 L 124.121094 65.582031 Z M 114.078125 59.515625 L 114.078125 63.421875 L 111.304688 59.515625 L 110.070312 59.515625 L 110.070312 66.710938 L 111.714844 66.710938 L 111.714844 62.804688 L 114.488281 66.710938 L 115.722656 66.710938 L 115.722656 59.515625 Z M 104.242188 66.710938 L 105.886719 66.710938 L 105.886719 59.515625 L 104.242188 59.515625 Z M 97.847656 66.855469 C 99.410156 66.855469 100.519531 66.03125 100.519531 64.644531 C 100.519531 63.125 99.296875 62.742188 98.207031 62.414062 C 97.085938 62.074219 96.910156 61.847656 96.910156 61.519531 C 96.910156 61.230469 97.167969 60.972656 97.683594 60.972656 C 98.339844 60.972656 98.679688 61.292969 98.925781 61.808594 L 100.316406 60.996094 C 99.789062 59.9375 98.867188 59.371094 97.683594 59.371094 C 96.4375 59.371094 95.265625 60.171875 95.265625 61.5625 C 95.265625 62.9375 96.316406 63.453125 97.386719 63.75 C 98.464844 64.046875 98.875 64.222656 98.875 64.664062 C 98.875 64.941406 98.679688 65.25 97.898438 65.25 C 97.085938 65.25 96.644531 64.851562 96.386719 64.253906 L 94.96875 65.074219 C 95.371094 66.136719 96.335938 66.855469 97.847656 66.855469 Z M 89.089844 66.855469 C 90.652344 66.855469 91.761719 66.03125 91.761719 64.644531 C 91.761719 63.125 90.539062 62.742188 89.449219 62.414062 C 88.328125 62.074219 88.152344 61.847656 88.152344 61.519531 C 88.152344 61.230469 88.410156 60.972656 88.925781 60.972656 C 89.582031 60.972656 89.921875 61.292969 90.167969 61.808594 L 91.558594 60.996094 C 91.03125 59.9375 90.105469 59.371094 88.925781 59.371094 C 87.679688 59.371094 86.507812 60.171875 86.507812 61.5625 C 86.507812 62.9375 87.558594 63.453125 88.625 63.75 C 89.707031 64.046875 90.117188 64.222656 90.117188 64.664062 C 90.117188 64.941406 89.921875 65.25 89.140625 65.25 C 88.328125 65.25 87.886719 64.851562 87.628906 64.253906 L 86.210938 65.074219 C 86.613281 66.136719 87.578125 66.855469 89.089844 66.855469 Z M 78.820312 64.039062 L 79.664062 61.394531 L 80.507812 64.039062 Z M 81.359375 66.710938 L 83.160156 66.710938 L 80.710938 59.515625 L 78.613281 59.515625 L 76.167969 66.710938 L 77.964844 66.710938 L 78.328125 65.582031 L 81 65.582031 Z M 81.359375 66.710938 "/> <path fill-rule="nonzero" fill="currentColor" fill-opacity="1" d="M 14.097656 39.699219 L 14.097656 0.984375 L 2.753906 0.984375 L 2.753906 50.621094 L 31.8125 50.621094 L 31.8125 39.699219 Z M 59.769531 15.167969 L 59.769531 18.503906 C 57.441406 15.8125 53.945312 14.179688 49.195312 14.179688 C 39.90625 14.179688 32.242188 22.34375 32.242188 32.894531 C 32.242188 43.46875 39.90625 51.632812 49.195312 51.632812 C 53.945312 51.632812 57.441406 50 59.769531 47.285156 L 59.769531 50.621094 L 70.40625 50.621094 L 70.40625 15.167969 Z M 51.339844 41.5625 C 46.433594 41.5625 42.878906 38.226562 42.878906 32.894531 C 42.878906 27.582031 46.433594 24.25 51.339844 24.25 C 56.214844 24.25 59.769531 27.582031 59.769531 32.894531 C 59.769531 38.226562 56.214844 41.5625 51.339844 41.5625 Z M 97.378906 14.179688 C 92.628906 14.179688 89.132812 15.8125 86.804688 18.503906 L 86.804688 0.984375 L 76.167969 0.984375 L 76.167969 50.621094 L 86.804688 50.621094 L 86.804688 47.285156 C 89.132812 50 92.628906 51.632812 97.378906 51.632812 C 106.667969 51.632812 114.332031 43.46875 114.332031 32.894531 C 114.332031 22.34375 106.667969 14.179688 97.378906 14.179688 Z M 95.234375 41.5625 C 90.359375 41.5625 86.804688 38.226562 86.804688 32.894531 C 86.804688 27.582031 90.359375 24.25 95.234375 24.25 C 100.136719 24.25 103.695312 27.582031 103.695312 32.894531 C 103.695312 38.226562 100.136719 41.5625 95.234375 41.5625 Z M 127.816406 37.148438 L 152.980469 37.148438 C 153.257812 35.8125 153.410156 34.386719 153.410156 32.894531 C 153.410156 22.179688 145.75 14.179688 135.386719 14.179688 C 124.199219 14.179688 116.535156 22.34375 116.535156 32.894531 C 116.535156 43.46875 124.046875 51.632812 136.183594 51.632812 C 142.898438 51.632812 148.171875 49.148438 151.632812 44.320312 C 148.78125 42.6875 145.933594 41.054688 143.113281 39.421875 C 141.703125 40.988281 139.21875 42.113281 136.308594 42.113281 C 132.414062 42.113281 129.164062 40.847656 127.816406 37.148438 Z M 127.601562 29.214844 C 128.582031 25.605469 131.28125 23.605469 135.328125 23.605469 C 138.515625 23.605469 141.703125 25.101562 142.835938 29.214844 Z M 157.394531 50.621094 L 168.03125 50.621094 L 168.03125 0.984375 L 157.394531 0.984375 Z M 207.480469 0.984375 L 170.605469 0.984375 L 170.605469 11.90625 L 183.359375 11.90625 L 183.359375 50.621094 L 194.699219 50.621094 L 194.699219 11.90625 L 207.480469 11.90625 Z M 229.398438 15.167969 L 229.398438 18.503906 C 227.070312 15.8125 223.574219 14.179688 218.824219 14.179688 C 209.535156 14.179688 201.871094 22.34375 201.871094 32.894531 C 201.871094 43.46875 209.535156 51.632812 218.824219 51.632812 C 223.574219 51.632812 227.070312 50 229.398438 47.285156 L 229.398438 50.621094 L 240.035156 50.621094 L 240.035156 15.167969 Z M 220.96875 41.5625 C 216.0625 41.5625 212.507812 38.226562 212.507812 32.894531 C 212.507812 27.582031 216.0625 24.25 220.96875 24.25 C 225.84375 24.25 229.398438 27.582031 229.398438 32.894531 C 229.398438 38.226562 225.84375 41.5625 220.96875 41.5625 Z M 271.820312 15.167969 L 271.820312 18.777344 C 269.492188 15.882812 266.089844 14.179688 261.460938 14.179688 C 251.40625 14.179688 244.019531 22.410156 244.019531 32.179688 C 244.019531 41.976562 251.40625 50.207031 261.460938 50.207031 C 266.089844 50.207031 269.492188 48.503906 271.820312 45.585938 L 271.820312 50.066406 C 271.820312 55.101562 268.753906 57.652344 263.820312 57.652344 C 259.128906 57.652344 257.078125 55.675781 255.726562 53.195312 C 252.691406 54.941406 249.660156 56.6875 246.65625 58.4375 C 249.90625 64.253906 256.066406 67.035156 263.453125 67.035156 C 272.894531 67.035156 282.179688 62 282.179688 50.066406 L 282.179688 15.167969 Z M 263.238281 40.410156 C 258.210938 40.410156 254.65625 37.078125 254.65625 32.179688 C 254.65625 27.308594 258.210938 23.976562 263.238281 23.976562 C 268.265625 23.976562 271.820312 27.308594 271.820312 32.179688 C 271.820312 37.078125 268.265625 40.410156 263.238281 40.410156 "/> </svg><div><h1>TagLine</h1><small>comercial · desenvolvimento · orçamento</small></div></div>
-  <span id="versao" title="Data e hora em que este arquivo foi gerado">Versão 09/11/2026 17:09</span>
+  <span id="versao" title="Data e hora em que este arquivo foi gerado">Versão 09/11/2026 17:21</span>
   <button id="btnSair" class="mini oculto" type="button">Sair</button>
 </header>
 
@@ -332,6 +334,17 @@
       <button type="button" class="mini" id="btnContinuarRasc">Continuar este</button>
       <button type="button" class="forte" id="btnZerarRasc">Começar pedido novo</button>
     </div>
+    <section class="bloco" id="blocoBriefing">
+      <h2><span class="num">0</span>Colar briefing <span class="ajuda" style="font-weight:400">opcional</span></h2>
+      <p class="ajuda" style="margin-top:0">Cole o texto do jeito que você escreveria no e-mail (ex.: <i>pasta 4752, rep Andressa, fusion 0,7 com textura, 30x30mm, costura</i>). O TagLine preenche o formulário; depois é só conferir.</p>
+      <textarea id="txtBriefing" rows="4" placeholder="pasta 3104 rep ezequiel — silicone branco fosco e 3d flex cromo, aprox 5 cm de largura, para costura em calça jeans"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button type="button" class="forte" id="btnLerBriefing">Preencher formulário</button>
+        <button type="button" class="mini" id="btnLimparBriefing">Limpar texto</button>
+      </div>
+      <div id="resBriefing"></div>
+    </section>
+
     <section class="bloco">
       <h2><span class="num">1</span>Cliente</h2>
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap">
@@ -952,6 +965,175 @@ function checarArquivos(){
   $("avisoArquivos").innerHTML = selos + avisosArquivos().map(a => `<div class="aviso">⚠ ${esc(a)}</div>`).join("");
   if (typeof atualizarChecklist === "function") atualizarChecklist();
 }
+
+// ---------- COLAR BRIEFING: lê o texto livre do comercial e preenche o formulário (regras, sem IA) ----------
+const semAcento = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const TEC_ALIAS = [
+  [/3\s*d\s*flex/, "3D Flex"], [/3\s*d\s*sport/, "3D Sport"], [/3\s*d\s*fashion/, "3D Fashion"], [/new\s*3\s*d/, "New 3D"],
+  [/4\s*d\s*touch/, "4D Touch"], [/flex\s*print|flexprint/, "Flex Print"], [/light\s*print|lightprint/, "Light Print"],
+  [/fusion/, "Fusion Tag"], [/dome/, "Dome Tag"], [/silicone/, "Silicone"], [/refletiv|refletex/, "Refletivo"],
+  [/makarin/, "Makarin"], [/vernice/, "Couro PU Vernice"], [/nobre/, "Couro PU Nobre"], [/perolato/, "Couro PU Perolato"],
+  [/(?<!silk )metal+ic/, "Couro PU Metallic"], [/snooker/, "Couro PU Snooker"], [/mousse/, "Couro PU Mousse"], [/\bpu light\b/, "Couro PU Light"],
+  [/\bpill\b/, "Pill"], [/\bstar\b/, "Star"], [/\bfoil\b/, "Foil"], [/flock/, "Flock"], [/slim/, "Slim Tag"], [/politec/, "Politec"],
+  [/luminous/, "Luminous"], [/emborrachad/, "Emborrachado"], [/\bflex\b/, "Flex"], [/\bpu\b|couro/, "Couro PU"],
+];
+const CORES_RE = [[/off ?white/, "off white"], [/pret[oa]s?/, "preto"], [/branc[oa]s?/, "branco"], [/prata|pratead[oa]/, "prata"], [/dourad[oa]s?/, "dourado"], [/ouro/, "ouro"], [/bronze/, "bronze"], [/cobre/, "cobre"],
+  [/champa(nhe|gne)/, "champanhe"], [/chumbo/, "chumbo"], [/grafite/, "grafite"], [/cinza/, "cinza"], [/azul marinho|marinho/, "azul marinho"], [/azul/, "azul"], [/vermelh[oa]/, "vermelho"], [/vinho/, "vinho"],
+  [/verde/, "verde"], [/amarel[oa]/, "amarelo"], [/rosa/, "rosa"], [/rox[oa]/, "roxo"], [/lilas/, "lilás"], [/laranja/, "laranja"], [/bege/, "bege"], [/nude/, "nude"], [/caramelo/, "caramelo"],
+  [/marrom/, "marrom"], [/cafe/, "café"], [/cristal/, "cristal"], [/transparente/, "transparente"], [/furtacor/, "furtacor"], [/holografic[oa]/, "holográfico"], [/cromo/, "cromo"], [/gelo/, "gelo"]];
+const CORES_BRIEF = CORES_RE.map(x => x[1]);
+const ACAB_BRIEF = [[/textura/, "textura"], [/brilho/, "brilho"], [/fosco/, "fosco"], [/relevo/, "relevo"], [/grava/, "gravacao"], [/letras? soltas?/, "letra solta"], [/\bplac(a|aa|uinha|as|uinhas|eta)\b/, "placa"]];
+function acharTecnicaCadastro(nome){
+  const n = semAcento(nome);
+  return tecnicas.find(t => semAcento(t.nome) === n) || null;
+}
+function numBr(v){ return Number(String(v).replace(",", ".")); }
+function lerMedida(t){
+  // devolve {l, a, prop, nota} em mm
+  const u = (x, un) => un === "mm" ? x : un === "cm" ? x * 10 : null;
+  let m = t.match(/(\d+(?:[.,]\d+)?)\s*(cm|mm)?\s*(?:x|por)\s*(\d+(?:[.,]\d+)?)\s*(cm|mm)?/);
+  if (m) {
+    let un = m[2] || m[4]; const a = numBr(m[1]), b = numBr(m[3]); let nota = "";
+    if (!un) { un = a <= 15 && b <= 15 ? "cm" : "mm"; nota = `unidade não informada: entendi ${un}`; }
+    return { l: u(a, m[2] || un), a: u(b, m[4] || un), prop: null, nota };
+  }
+  const l = t.match(/(?:largura|larg\.?|comprimento)\s*(?:aprox\.?|aproximada|de|:)?\s*(\d+(?:[.,]\d+)?)\s*(cm|mm)|(\d+(?:[.,]\d+)?)\s*(cm|mm)\s*(?:de\s*)?(?:largura|comprimento)/);
+  const a = t.match(/(?:altura|alt\.?)\s*(?:aprox\.?|aproximada|de|:)?\s*(\d+(?:[.,]\d+)?)\s*(cm|mm)|(\d+(?:[.,]\d+)?)\s*(cm|mm)\s*(?:de\s*)?altura/);
+  const pick = (x) => x ? u(numBr(x[1] || x[3]), x[2] || x[4]) : null;
+  if (l || a) { const L = pick(l), A = pick(a); return { l: L, a: A, prop: L && !A ? "altura" : A && !L ? "largura" : null, nota: "" }; }
+  const d = t.match(/(\d+(?:[.,]\d+)?)\s*(cm|mm)\s*(?:de\s*)?di[aâ]metro|di[aâ]metro\s*(?:de|:)?\s*(\d+(?:[.,]\d+)?)\s*(cm|mm)/);
+  if (d) { const v = u(numBr(d[1] || d[3]), d[2] || d[4]); return { l: v, a: v, prop: null, nota: "diâmetro" }; }
+  const s1 = t.match(/(\d+(?:[.,]\d+)?)\s*(cm|mm)\b/);
+  if (s1) return { l: u(numBr(s1[1]), s1[2]), a: null, prop: "altura", nota: "uma medida só: entendi largura, altura proporcional" };
+  if (/(tamanho|medida)s?\s*(do|da)\s*(arquivo|layout|arte)|tamanho real|mesma medida|mesmo tamanho/.test(t)) return { l: null, a: null, prop: null, nota: "medida do arquivo" };
+  return null;
+}
+function coresDe(t){
+  const achou = []; let resto = t;
+  CORES_RE.forEach(([re, c]) => { const m = new RegExp(`\\b(?:${re.source})\\b`).exec(resto); if (m) { achou.push({ c, i: m.index }); resto = resto.slice(0, m.index) + " ".repeat(m[0].length) + resto.slice(m.index + m[0].length); } });
+  return achou.sort((a, b) => a.i - b.i).map(x => x.c);
+}
+const corCanon = (x) => { if (!x) return null; const c = coresDe(x); return c[0] || null; };
+function lerBriefing(txt){
+  const t = semAcento(txt).replace(/\s+/g, " ");
+  const r = { opcoes: [], notas: [] };
+  const mp = t.match(/pasta\s*(?:n[ºo°]?\.?)?\s*[:#-]?\s*(\d{1,5})\b/); if (mp) r.pasta = mp[1];
+  if (/pasta nova|cliente novo/.test(t)) r.pastaNova = true;
+  const mr = t.match(/\brep(?:resentante|r)?\.?\s*:?\s*([a-z]+)(?:\s+([a-z]+))?/);
+  if (mr) {
+    const lixo = /^(cliente|favor|criar|segue|pasta|quer|obrigad\w*|oie?|bom|boa|para|com|no|na|de|do|da|e|o|a|nova|novo)$/;
+    const TAG = /^(loom|vr|llb|ditex)$/;
+    const w = [mr[1], mr[2] && (TAG.test(mr[1]) || TAG.test(mr[2])) ? mr[2] : null].filter(x => x && !lixo.test(x) && !TEC_ALIAS.some(([re]) => re.test(x)));
+    if (w.length) r.representante = w.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(" ");
+  }
+  const mc = t.match(/\b(\d{3,5})[.-](\d{4})\b/);
+  if (mc) {
+    r.codigo = `${mc[1]}.${mc[2]}`;
+    if (/adicion|acrescent|pantone|\bcor\b|\bcores\b|comb|medida|menor|maior|diminu|aument/.test(t) && /adicion|acrescent|diminu|aument|troca|nova cor|outra cor/.test(t)) r.tipo = "cor_medida";
+    else if (/alter|ajust|troc|tirar|remov|mudar|variac|corrig|atualiz/.test(t)) r.tipo = "alteracao";
+    else r.notas.push(`Cita o código ${r.codigo} como referência (deixei como desenvolvimento novo).`);
+  }
+  // técnicas na ordem em que aparecem; cada uma vira uma opção
+  let resto = t; const achadas = [];
+  TEC_ALIAS.forEach(([re, nome]) => {
+    const g = new RegExp(re.source, "g"); let m;
+    while ((m = g.exec(resto))) { achadas.push({ nome, i: m.index, fim: m.index + m[0].length }); resto = resto.slice(0, m.index) + " ".repeat(m[0].length) + resto.slice(m.index + m[0].length); g.lastIndex = m.index + m[0].length; }
+  });
+  achadas.sort((a, b) => a.i - b.i);
+  const vistos = new Set(); let tecs = achadas.filter(a => !vistos.has(a.nome) && vistos.add(a.nome));
+  // "pu makarin", "couro pu vernice": a linha específica manda; o "Couro PU" genérico sai
+  if (tecs.some(a => a.nome !== "Couro PU" && (a.nome.startsWith("Couro PU") || a.nome === "Makarin"))) tecs = tecs.filter(a => a.nome !== "Couro PU");
+  const medida = lerMedida(t);
+  const coresGerais = coresDe(t);
+  const pantone = (t.match(/pantone\s*:?\s*((?:tpg|tcx)?\s*\d{1,2}-\d{3,4}\s*(?:tpg|tcx)?|\d{3,4}\s*c\b)/) || [])[1];
+  const escrita = (t.match(/(?:escrita|letras?|logo)\s+(?:em\s+|na cor\s+|cor\s+)?([a-z]+(?: [a-z]+)?)/) || [])[1];
+  const base = (t.match(/(?:base|fundo)\s+(?:em\s+|na cor\s+|cor\s+)?([a-z]+(?: [a-z]+)?)/) || [])[1];
+  const corOk = corCanon;
+  const mkOp = (tec, seg) => {
+    const cs = seg ? coresDe(seg) : []; const cores = cs.length ? cs : coresGerais;
+    const cad = tec ? acharTecnicaCadastro(tec.nome) : null;
+    const esp = seg && (seg.match(/^\s*(0[,.]\d{1,2}|1[,.]0)\b/) || [])[1];
+    const acab = ACAB_BRIEF.filter(([re]) => re.test(seg || t)).map(([, v]) => v);
+    const obs = [];
+    if (tec && !cad) obs.push(tec.nome === "Couro PU" ? "Couro PU: escolha a linha (Vernice, Nobre, Perolato…)" : `técnica citada: ${tec.nome} (não achei no cadastro)`);
+    if (esp) obs.push(`espessura ${esp.replace(".", ",")} mm`);
+    if (cores.length > 1) obs.push(`cores citadas: ${cores.join(", ")}`);
+    if (medida && medida.nota) obs.push(medida.nota);
+    return {
+      tecnica: cad ? cad.nome : "", sugerir_tecnica: !tec,
+      largura_mm: medida ? medida.l : null, altura_mm: medida ? medida.a : null, proporcional: medida ? medida.prop : null,
+      cor_base: corOk(base) || cores[0] || "", cor_escrita: corOk(escrita) || (pantone ? "Pantone " + pantone.toUpperCase().replace(/\s+/g, " ") : ""),
+      cor_impressao: "", acabamento: acab.join(", "), obs: obs.join(" · "),
+    };
+  };
+  if (tecs.length) tecs.forEach((a, k) => r.opcoes.push(mkOp(a, t.slice(a.fim, k + 1 < tecs.length ? tecs[k + 1].i : t.length))));
+  else if (/sugest|ideia|opc(ao|oes)|aberto|indica|criar algumas|criar umas/.test(t) || medida || coresGerais.length || pantone) r.opcoes.push(Object.assign(mkOp(null, ""), r.tipo ? { sugerir_tecnica: false } : {}));
+  if (/costur/.test(t)) r.fixacao = "costura"; else if (/termocolante|termo\b/.test(t)) r.fixacao = "termocolante"; else if (/autocolante|adesiv/.test(t)) r.fixacao = "autocolante";
+  const loc = t.match(/\b(cos|gola|manga|bone|presilha|puxador|barra|bolso|lateral|costas|frente|nuca)\b/); if (loc) r.local = { cos: "cós", bone: "boné" }[loc[1]] || loc[1];
+  const tec = t.match(/\b(jeans|suplex|malha|moletom|dry ?fit|algodao|poliamida|lycra|tactel|nylon|couro)\b/); if (tec && tec[1] !== "couro") r.tecido = tec[1];
+  if (/elastic|estica|lycra|suplex/.test(t)) r.estica = "sim";
+  const seg = t.match(/\b(fitness|praia|lingerie|infantil|uniforme|calcado|moveis|casual)\b/); if (seg) r.segmento = { praia: "Moda praia", calcado: "Calçados", moveis: "Móveis", uniforme: "Uniformes" }[seg[1]] || seg[1].charAt(0).toUpperCase() + seg[1].slice(1);
+  const q = t.match(/(\d[\d.]*)\s*(pecas|pcs|unidades|un)\b/); if (q) r.quantidade = q[1] + " peças";
+  return r;
+}
+function aplicarBriefing(){
+  const txt = $("txtBriefing").value.trim();
+  if (!txt) { $("resBriefing").innerHTML = '<div class="aviso">Cole o texto do briefing primeiro.</div>'; return; }
+  const r = lerBriefing(txt), feito = [], falta = [];
+  const vazio = (id) => !$(id).value.trim();
+  // cliente pela pasta
+  if (r.pasta && vazio("cliente")) {
+    const pz = (x) => String(x || "").replace(/^0+(?=\d)/, "");
+    const cods = [...new Set([...clientes.filter(c => pz(c.pasta) === pz(r.pasta)).map(c => c.codigo), ...pastas.filter(p => pz(p.pasta) === pz(r.pasta) && p.cliente_codigo).map(p => p.cliente_codigo)])];
+    if (cods.length === 1) { const c = clientes.find(x => x.codigo === cods[0]); if (c) { $("cliente").value = `${nomeExibidoCli(c)} — ${c.codigo}`; aplicarCliente(); feito.push(`Cliente pela pasta: ${nomeExibidoCli(c)}`); } }
+    else if (cods.length > 1) falta.push(`Pasta ${r.pasta} tem ${cods.length} clientes: escolha o cliente.`);
+  }
+  if (r.pasta) { $("pasta").value = fmtPasta(r.pasta); mostrarNomePasta(); feito.push(`Pasta ${fmtPasta(r.pasta)}`); }
+  else if (r.pastaNova) falta.push('"Pasta nova": escolha o cliente ou marque cliente novo.');
+  if (vazio("cliente")) falta.push("Cliente");
+  if (r.representante) {
+    // "rep Andressa/Jéssica/Ezequiel" = cliente do próprio comercial interno
+    const interno = [...$("listaInternos").options].map(o => o.value).find(n => semAcento(n) === semAcento(r.representante));
+    if (interno) { if (vazio("vendedorInterno")) { $("vendedorInterno").value = interno; feito.push(`Representante interno: ${interno}`); } }
+    else if (vazio("representante")) { $("representante").value = r.representante; feito.push(`Representante: ${r.representante}`); }
+  }
+  if (r.tipo) {
+    const el = document.querySelector(`input[name=tipo][value=${r.tipo}]`); el.checked = true; el.dispatchEvent(new Event("change"));
+    $("codigoBase").value = r.codigo; feito.push(`Tipo: ${r.tipo === "alteracao" ? "alterar" : "nova cor/medida em"} ${r.codigo}`);
+  }
+  // opções
+  if (r.opcoes.length) {
+    const atuais = [...document.querySelectorAll("#opcoes .opcao")];
+    const cheias = atuais.map(lerOpcao).filter(opcaoPreenchida);
+    if (!cheias.length || confirm(`Já há ${cheias.length} opção(ões) preenchida(s).\n\nOK = trocar pelas do briefing    ·    Cancelar = manter e acrescentar`)) atuais.forEach(e => e.remove());
+    r.opcoes.forEach(o => adicionarOpcao(o));
+    r.opcoes.forEach((o, i) => {
+      const med = o.largura_mm || o.altura_mm ? `${o.largura_mm ?? "prop."} × ${o.altura_mm ?? "prop."} mm` : "";
+      feito.push(`Opção: ${o.tecnica || (o.sugerir_tecnica ? "desenvolvimento sugere" : "técnica não reconhecida")}${med ? " · " + med : ""}${o.cor_base ? " · " + o.cor_base : ""}${o.acabamento ? " · " + o.acabamento : ""}`);
+      if (!o.sugerir_tecnica && !o.tecnica) falta.push(`Opção ${i + 1}: técnica`);
+      if (!o.largura_mm && !o.altura_mm) falta.push(`Opção ${i + 1}: medida em mm${/medida do arquivo/.test(o.obs) ? " (abra o arquivo e digite a medida)" : ""}`);
+      if (!o.cor_base && !o.cor_escrita) falta.push(`Opção ${i + 1}: cor`);
+    });
+  } else falta.push("Técnica (ou marque \"deixar o desenvolvimento sugerir\")", "Medida");
+  const setRadio = (n, v) => { const el = document.querySelector(`input[name=${n}][value=${v}]`); if (el && !valorRadio(n)) { el.checked = true; el.dispatchEvent(new Event("change")); return true; } return false; };
+  if (r.fixacao && setRadio("fixacao", r.fixacao)) feito.push(`Fixação: ${r.fixacao}`);
+  if (!r.fixacao && !valorRadio("fixacao")) falta.push("Aplicação: costura, termocolante ou autocolante?");
+  if (r.local && vazio("local")) { $("local").value = r.local; feito.push(`Onde aplica: ${r.local}`); }
+  if (r.tecido && vazio("tecido")) { $("tecido").value = r.tecido; feito.push(`Tecido: ${r.tecido}`); }
+  if (r.estica) setRadio("estica", r.estica);
+  if (r.segmento && vazio("segmento")) { $("segmento").value = r.segmento; feito.push(`Segmento: ${r.segmento}`); }
+  if (r.quantidade && vazio("quantidade")) { $("quantidade").value = r.quantidade; feito.push(`Quantidade: ${r.quantidade}`); }
+  if (!valorRadio("vetorial") && ![...$("arquivos").files].length) falta.push("Anexe a arte (o TagLine confere se é vetor).");
+  // texto original vai junto para o desenvolvimento
+  if (!$("obs").value.includes(txt)) $("obs").value = ($("obs").value.trim() ? $("obs").value.trim() + "\n\n" : "") + "Briefing colado:\n" + txt;
+  $("resBriefing").innerHTML = `<div class="resBrief"><b>Preenchi</b> (confira cada campo):<ul>${feito.map(x => `<li>${esc(x)}</li>`).join("") || "<li>nada reconhecido</li>"}</ul>` +
+    (r.notas.length ? `<ul>${r.notas.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "") +
+    (falta.length ? `<div class="falta" style="margin-top:6px"><b>Falta</b>:<ul>${falta.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "") +
+    `<p class="ajuda" style="margin:6px 0 0">O texto original foi para "Observações".</p></div>`;
+  salvarRascunho(); atualizarChecklist();
+}
+$("btnLerBriefing").onclick = aplicarBriefing;
+$("btnLimparBriefing").onclick = () => { $("txtBriefing").value = ""; $("resBriefing").innerHTML = ""; };
 
 // ---------- OPÇÕES ----------
 $("btnAddOpcao").onclick = () => adicionarOpcao();
